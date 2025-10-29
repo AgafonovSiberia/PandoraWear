@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta, UTC
 from typing import Optional, Any
 
-from common.core.protocols.icache import ICache
+from apps.common.core.protocols.icache import ICache
 
 
 class MemoryCache(ICache):

@@ -2,7 +2,7 @@ import json
 
 import redis.asyncio as redis
 
-from common.core.protocols.icache import ICache
+from apps.common.core.protocols.icache import ICache
 
 
 class RedisCache(ICache):

@@ -1,6 +1,6 @@
 from aiokafka import AIOKafkaConsumer
 
-from common.core.protocols.broker.consumer import IConsumerSettings, IConsumer
+from apps.common.core.protocols.broker.consumer import IConsumerSettings, IConsumer
 
 
 class KafkaAsyncConsumer(IConsumer):

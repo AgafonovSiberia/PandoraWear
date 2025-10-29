@@ -1,5 +1,5 @@
+from apps.common.infrastructure.repository.user import UserRepo
 from apps.gateway.services.pandora.session import PandoraSession
-from common.infrastructure.repository.user import UserRepo
 
 
 class PandoraSessionManager:

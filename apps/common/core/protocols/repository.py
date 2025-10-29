@@ -1,19 +1,18 @@
-from common.core.protocols.repository import IUserRepo
-from common.models.user import (
+from typing import Protocol
+
+from apps.common.models.user import (
+    UserIn,
     User,
     UserPandoraCred,
     UserPandoraCredIn,
     SessionIn,
     Session,
-    FormUserReg,
 )
 
 
-class UserRepo(IUserRepo):
+class IUserRepo(Protocol):
     async def get_user(self, user_id: int) -> User: ...
-    async def find_user_by_email(self, email: str) -> User: ...
-
-    async def save_user(self, user: FormUserReg) -> User: ...
+    async def save_user(self, user: UserIn) -> User: ...
     async def get_pandora_cred(self, user_id: int) -> UserPandoraCred: ...
     async def save_pandora_cred(self, cred: UserPandoraCredIn) -> UserPandoraCred: ...
     async def get_pandora_session(self, user_id: int) -> Session: ...

@@ -4,9 +4,9 @@ import time
 
 from aiohttp import ClientSession, CookieJar, TCPConnector
 
+from apps.common.models.user import UserPandoraCred
 from apps.gateway.services.pandora import AuthResponseField, excepton, RequestMethod
 from apps.gateway.services.pandora.const.url import URL
-from common.models.user import UserPandoraCred
 
 TTL_LOGIN = 5
 LOGIN_TIMEOUT = 10

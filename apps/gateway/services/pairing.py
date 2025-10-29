@@ -3,10 +3,10 @@ import string
 from datetime import datetime, timedelta, UTC
 from uuid import uuid4, UUID
 
+from apps.common.infrastructure.cache.redis import RedisCache
 from apps.gateway.core.exeptions import ErrInvalidCode
 from apps.gateway.core.models import CreatedCode, BindedDevice
 from apps.gateway.core.protocols.i_pairing import IPairingService
-from common.infrastructure.cache.redis import RedisCache
 
 PAIR_CODE_LENGTH = 6
 PAIR_CODE_TTL = 300

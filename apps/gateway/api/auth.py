@@ -2,9 +2,9 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from apps.common.infrastructure.repository.user import UserRepo
+from apps.common.models.user import User, UserIn, FormUserReg
 from apps.gateway.auth.crypto import crypt_password, check_password
-from common.infrastructure.repository.user import UserRepo
-from common.models.user import User, UserIn, FormUserReg
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/users")
 

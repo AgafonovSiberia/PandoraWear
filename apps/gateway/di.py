@@ -8,13 +8,20 @@ from dishka import (
 from dishka.integrations.fastapi import FastapiProvider
 from fastapi import Request
 
+from apps.common.core.protocols import IUserRepo
+from apps.common.core.protocols.broker.consumer import IConsumerSettings, IConsumer
+from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
+from apps.common.core.protocols.icache import ICache
+from apps.common.infrastructure.broker.consumer import KafkaAsyncConsumer
+from apps.common.infrastructure.broker.producer import KafkaAsyncProducer
+from apps.common.infrastructure.cache.redis import RedisCache
+from apps.common.infrastructure.repository.user import UserRepo
 from apps.gateway.common.context import UserContext
 from apps.gateway.config import (
     RedisSettings,
     GatewayConsumerSettings,
     GatewayProducerSettings,
 )
-
 # from apps.gateway.core.protocols import (
 #     IPairingService,
 #     IDeviceService,
@@ -25,14 +32,6 @@ from apps.gateway.config import (
 # )
 from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session_manager import PandoraClientManager
-from common.core.protocols.broker.consumer import IConsumerSettings, IConsumer
-from common.core.protocols.broker.producer import IProducer, IProducerSettings
-from common.core.protocols.icache import ICache
-from common.core.protocols.repository import IUserRepo
-from common.infrastructure.broker.consumer import KafkaAsyncConsumer
-from common.infrastructure.broker.producer import KafkaAsyncProducer
-from common.infrastructure.cache.redis import RedisCache
-from common.infrastructure.repository.user import UserRepo
 
 
 class ConfigProvider(FastapiProvider):

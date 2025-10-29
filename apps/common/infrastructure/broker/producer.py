@@ -1,6 +1,6 @@
 from aiokafka import AIOKafkaProducer
 
-from common.core.protocols.broker.producer import IProducer, IProducerSettings
+from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
 
 
 class KafkaAsyncProducer(IProducer):

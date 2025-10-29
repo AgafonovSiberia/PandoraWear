@@ -2,10 +2,10 @@ import asyncio
 
 from aiohttp import TCPConnector
 
+from apps.common.core.protocols import IUserRepo
+from apps.common.models.user import SessionIn
 from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session import PandoraSession
-from common.core.protocols.repository import IUserRepo
-from common.models.user import SessionIn
 
 MAX_SESSION = 4
 GARBAGE_COLLECT_INTERVAL = 60 * 60 * 24
