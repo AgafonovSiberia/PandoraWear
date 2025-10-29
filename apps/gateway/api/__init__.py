@@ -2,7 +2,7 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter
 
 # from .engine import router as engine_router
-from .health import router as health_router
+from apps.gateway.api.routes.health import router as health_router
 
 
 # from .pairing import router as pairing_router
