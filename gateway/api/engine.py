@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from gateway.api.schemas import EngineCommandIn, EngineAcceptedOut
 from gateway.auth.deps import get_current_device
-from gateway.core.protocols import EngineServicePort
+from gateway.core.protocols import IEngineService
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ router = APIRouter()
 async def engine_command(
     payload: EngineCommandIn,
     dev=Depends(get_current_device),
-    engine: FromDishka[EngineServicePort] = None,
+    engine: FromDishka[IEngineService] = None,
 ):
     try:
         event_id = await engine.enqueue(dev.user_id, dev.device_id, payload.action)
