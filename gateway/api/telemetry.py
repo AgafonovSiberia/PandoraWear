@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from gateway.api.schemas import TelemetryOut
 from gateway.auth.deps import get_current_device
-from gateway.core.protocols import TelemetryServicePort
+from gateway.core.protocols import ITelemetryService
 
 router = APIRouter()
 
@@ -14,7 +14,7 @@ router = APIRouter()
 @inject
 async def get_telemetry(
     dev=Depends(get_current_device),
-    telemetry: FromDishka[TelemetryServicePort] = None,
+    telemetry: FromDishka[ITelemetryService] = None,
 ):
     data = await telemetry.get_snapshot(dev.user_id)
     if data is None:

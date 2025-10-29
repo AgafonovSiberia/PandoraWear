@@ -4,7 +4,7 @@ from dishka.integrations.fastapi import inject, FromDishka
 from fastapi import Header, HTTPException, status
 
 from gateway.core.models import DevicePrincipal, AdminPrincipal
-from gateway.core.protocols import DeviceAuthPort, AdminAuthPort
+from gateway.core.protocols import IDeviceAuth, IAdminAuth
 
 
 def _bearer_from_header(authorization: Optional[str]) -> str:
@@ -19,7 +19,7 @@ def _bearer_from_header(authorization: Optional[str]) -> str:
 @inject
 async def get_current_device(
     authorization: Optional[str] = Header(default=None),
-    auth: FromDishka[DeviceAuthPort] = None,
+    auth: FromDishka[IDeviceAuth] = None,
 ) -> DevicePrincipal:
     token = _bearer_from_header(authorization)
     try:
@@ -33,7 +33,7 @@ async def get_current_device(
 @inject
 async def get_current_admin(
     authorization: Optional[str] = Header(default=None),
-    auth: FromDishka[AdminAuthPort] = None,
+    auth: FromDishka[IAdminAuth] = None,
 ) -> AdminPrincipal:
     token = _bearer_from_header(authorization)
     try:

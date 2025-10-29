@@ -2,12 +2,12 @@ from dishka import Container, Provider, Scope, make_container, provide
 
 from gateway.config import Settings
 from gateway.core.protocols import (
-    PairingServicePort,
-    DeviceServicePort,
-    TelemetryServicePort,
-    EngineServicePort,
-    DeviceAuthPort,
-    AdminAuthPort,
+    IPairingService,
+    IDeviceService,
+    ITelemetryService,
+    IEngineService,
+    IDeviceAuth,
+    IAdminAuth,
 )
 
 
@@ -44,7 +44,7 @@ class ServiceProvider(Provider):
         self,
         pandora: PandoraHttpClient,
         kafka: KafkaProducer,
-    ) -> EngineServicePort:
+    ) -> IEngineService:
         return EngineService(pandora=pandora, kafka=kafka)
 
     @provide(scope=Scope.APP)
@@ -52,35 +52,35 @@ class ServiceProvider(Provider):
         self,
         pandora: PandoraHttpClient,
         cache: RedisCache,
-    ) -> TelemetryServicePort:
+    ) -> ITelemetryService:
         return TelemetryService(pandora=pandora, cache=cache)
 
     @provide(scope=Scope.APP)
     async def pairing_service(
         self,
         cache: RedisCache,
-    ) -> PairingServicePort:
+    ) -> IPairingService:
         return PairingService(cache=cache)
 
     @provide(scope=Scope.APP)
     async def device_service(
         self,
         cache: RedisCache,
-    ) -> DeviceServicePort:
+    ) -> IDeviceService:
         return DeviceService(cache=cache)
 
     @provide(scope=Scope.APP)
     async def device_auth_service(
         self,
         cache: RedisCache,
-    ) -> DeviceAuthPort:
+    ) -> IDeviceAuth:
         return DeviceAuthService(redis=cache)
 
     @provide(scope=Scope.APP)
     async def admin_auth_service(
         self,
         cache: RedisCache,
-    ) -> AdminAuthPort:
+    ) -> IAdminAuth:
         return AdminAuthService(redis=cache)
 
 

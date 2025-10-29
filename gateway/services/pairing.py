@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, UTC
 from uuid import uuid4, UUID
 
 from gateway.core.models import CreatedCode, BindedDevice
-from gateway.core.protocols import PairingServicePort, ErrInvalidCode
+from gateway.core.protocols import IPairingService, ErrInvalidCode
 from gateway.infrastructure.redis import RedisCache
 
 PAIR_CODE_LENGTH = 6
@@ -12,7 +12,7 @@ PAIR_CODE_TTL = 300
 DEVICE_TOKEN_TTL = 60 * 60 * 24 * 365
 
 
-class PairingService(PairingServicePort):
+class PairingService(IPairingService):
     """Создание и активация кодов привязки устройств."""
 
     def __init__(self, cache: RedisCache):

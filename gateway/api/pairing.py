@@ -12,7 +12,7 @@ from gateway.api.schemas import (
     ApiMessage,
 )
 from gateway.auth.deps import get_current_admin
-from gateway.core.protocols import PairingServicePort, DeviceServicePort
+from gateway.core.protocols import IPairingService, IDeviceService
 
 router = APIRouter()
 
@@ -25,7 +25,7 @@ router = APIRouter()
 @inject
 async def create_pair_code(
     admin=Depends(get_current_admin),
-    pairing: FromDishka[PairingServicePort] = None,
+    pairing: FromDishka[IPairingService] = None,
 ):
     code, exp = await pairing.create_code(admin.user_id)
     return PairCodeCreateOut(code=code, expires_at=exp)
@@ -37,7 +37,7 @@ async def create_pair_code(
 @inject
 async def claim_device(
     payload: PairClaimIn,
-    pairing: FromDishka[PairingServicePort] = None,
+    pairing: FromDishka[IPairingService] = None,
 ):
     token, device_id, user_id, exp = await pairing.claim(
         payload.code, payload.device_name
@@ -53,7 +53,7 @@ async def claim_device(
 @inject
 async def list_devices(
     admin=Depends(get_current_admin),
-    device_svc: FromDishka[DeviceServicePort] = None,
+    device_svc: FromDishka[IDeviceService] = None,
 ):
     devices = await device_svc.list_for_user(admin.user_id)
     return [DeviceOut(**d) for d in devices]
@@ -68,7 +68,7 @@ async def list_devices(
 async def revoke_device(
     device_id: UUID,
     admin=Depends(get_current_admin),
-    device_svc: FromDishka[DeviceServicePort] = None,
+    device_svc: FromDishka[IDeviceService] = None,
 ):
     ok = await device_svc.revoke(admin.user_id, device_id)
     if not ok:
@@ -86,7 +86,7 @@ async def rename_device(
     device_id: UUID,
     payload: DeviceRenameIn,
     admin=Depends(get_current_admin),
-    device_svc: FromDishka[DeviceServicePort] = None,
+    device_svc: FromDishka[IDeviceService] = None,
 ):
     dev = await device_svc.rename(admin.user_id, device_id, payload.name)
     if not dev:
