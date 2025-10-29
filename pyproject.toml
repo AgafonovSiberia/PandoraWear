@@ -6,11 +6,16 @@ requires-python = ">=3.13"
 dependencies = [
     "aiohttp>=3.13.1",
     "aiokafka>=0.12.0",
+    "bcrypt>=5.0.0",
     "black>=25.9.0",
     "config-reader>=0.8",
     "dishka>=1.7.2",
-    "fastapi>=0.120.1",
+    "fastapi[standard]>=0.120.1",
+    "myapplication>=0.1.0",
     "pydantic-settings>=2.11.0",
+    "pydevd-pycharm==253.27864.50",
+    "pyjwt>=2.10.1",
+    "redis>=7.0.1",
     "tools>=1.0.6",
 ]
 
