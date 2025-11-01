@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta, UTC
 from typing import Optional, Any
 
-from apps.common.core.protocols.icache import ICache
+from apps.common.core.protocols.cache import ICache
 
 
 class MemoryCache(ICache):
@@ -19,10 +19,8 @@ class MemoryCache(ICache):
             return None
         return value
 
-    async def set(self, key: str, value: Any, expire_ms: int = None) -> None:
-        expire_at = (
-            datetime.now(UTC) + timedelta(seconds=expire_ms) if expire_ms else None
-        )
+    async def set(self, key: str, value: Any, ttl: int = None) -> None:
+        expire_at = datetime.now(UTC) + timedelta(seconds=ttl) if ttl else None
         self._store[key] = (str(value), expire_at)
 
     async def delete(self, key: str) -> None:
@@ -35,5 +33,5 @@ class MemoryCache(ICache):
         raw = await self.get(key)
         return json.loads(raw) if raw else None
 
-    async def set_json(self, key: str, data: dict, expire_ms: int = None) -> None:
-        await self.set(key, json.dumps(data), expire_ms=expire_ms)
+    async def set_json(self, key: str, data: dict, ttl: int = None) -> None:
+        await self.set(key, json.dumps(data), ttl=ttl)

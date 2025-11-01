@@ -1,14 +1,12 @@
-from apps.gateway.core.protocols.i_pandora import IPandoraClient
 from apps.gateway.services.pandora import (
     URL,
     RequestMethod,
     Command,
 )
-
 from apps.gateway.services.pandora.session import PandoraSession
 
 
-class PandoraClient(IPandoraClient):
+class PandoraClient:
     def __init__(self, session: PandoraSession):
         self._session = session
 

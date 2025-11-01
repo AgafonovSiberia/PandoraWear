@@ -4,7 +4,7 @@
 # from fastapi import APIRouter, Depends, HTTPException, status
 
 #
-# from apps.gateway.api.schemas import (
+# from apps.gateway.api.dao import (
 #     PairCodeCreateOut,
 #     PairClaimIn,
 #     PairClaimOut,

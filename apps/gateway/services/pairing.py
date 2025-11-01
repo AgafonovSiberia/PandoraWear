@@ -4,16 +4,15 @@ from datetime import datetime, timedelta, UTC
 from uuid import uuid4, UUID
 
 from apps.common.infrastructure.cache.redis import RedisCache
-from apps.gateway.core.exeptions import ErrInvalidCode
+from apps.gateway.core.exceptions import ErrInvalidCode
 from apps.gateway.core.models import CreatedCode, BindedDevice
-from apps.gateway.core.protocols.i_pairing import IPairingService
 
 PAIR_CODE_LENGTH = 6
 PAIR_CODE_TTL = 300
 DEVICE_TOKEN_TTL = 60 * 60 * 24 * 365
 
 
-class PairingService(IPairingService):
+class PairingService:
     """Создание и активация кодов привязки устройств."""
 
     def __init__(self, cache: RedisCache):
@@ -34,7 +33,7 @@ class PairingService(IPairingService):
     async def create_code(self, user_id: UUID) -> CreatedCode:
         code = self._generate_random_code()
         await self._cache.set(
-            self._get_cache_key(code=code), str(user_id), expire_ms=PAIR_CODE_TTL
+            self._get_cache_key(code=code), str(user_id), ttl=PAIR_CODE_TTL
         )
         return CreatedCode(
             code=code, expire_dt=datetime.now(UTC) + timedelta(seconds=PAIR_CODE_TTL)
@@ -52,7 +51,7 @@ class PairingService(IPairingService):
         await self._cache.set_json(
             f"device:{device_id}",
             {"user": user_id, "name": device_name, "token": token},
-            expire_ms=DEVICE_TOKEN_TTL,
+            ttl=DEVICE_TOKEN_TTL,
         )
 
         return BindedDevice(

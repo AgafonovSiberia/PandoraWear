@@ -1,9 +1,10 @@
-from apps.common.infrastructure.repository.user import UserRepo
+from apps.common.core.protocols.repository import IUserRepo
+
 from apps.gateway.services.pandora.session import PandoraSession
 
 
 class PandoraSessionManager:
-    def __init__(self, user_repository: UserRepo):
+    def __init__(self, user_repository: IUserRepo):
         self._sessions: dict[int, PandoraSession] = {}
         self._user_repository = user_repository
 

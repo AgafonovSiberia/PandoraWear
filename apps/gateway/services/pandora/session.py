@@ -4,7 +4,7 @@ import time
 
 from aiohttp import ClientSession, CookieJar, TCPConnector
 
-from apps.common.models.user import UserPandoraCred
+from apps.common.dao.user import PandoraCredDomain
 from apps.gateway.services.pandora import AuthResponseField, excepton, RequestMethod
 from apps.gateway.services.pandora.const.url import URL
 
@@ -19,7 +19,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 class PandoraSession:
     # __slots__ = ("_session", "_login_lock", "_last_login_ts", "_last_used_ts", "_session_id", "_cred")
 
-    def __init__(self, connector: TCPConnector, cred: UserPandoraCred) -> None:
+    def __init__(self, connector: TCPConnector, cred: PandoraCredDomain) -> None:
 
         self._session = ClientSession(
             base_url=URL.BASE_URL,
@@ -80,10 +80,10 @@ class PandoraSession:
         if resp.status not in (401, 403):
             return resp
 
-        await resp.release()
+        resp.release()
         return await self._request_with_relogin(method=method, path=path, **kwargs)
 
     async def _request_with_relogin(self, method: RequestMethod, path: str, **kwargs):
         self._last_login_ts = 0.0
-        await self._login()
+        await self.login()
         return await self._session.request(method, path, **kwargs)

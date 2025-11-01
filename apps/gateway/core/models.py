@@ -1,20 +1,7 @@
-from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
-
-
-@dataclass(frozen=True)
-class DevicePrincipal:
-    user_id: UUID
-    device_id: UUID
-
-
-@dataclass(frozen=True)
-class AdminPrincipal:
-    user_id: UUID
-    email: str
 
 
 class CreatedCode(BaseModel):

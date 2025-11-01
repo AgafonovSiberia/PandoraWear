@@ -1,7 +1,7 @@
 # from dishka.integrations.fastapi import inject, FromDishka
 # from fastapi import APIRouter, Depends, HTTPException, status
 #
-# from apps.gateway.api.schemas import EngineCommandIn, EngineAcceptedOut
+# from apps.gateway.api.dao import EngineCommandIn, EngineAcceptedOut
 # from apps.gateway.auth.deps import get_current_device
 # from apps.gateway.core.protocols import IEngineService
 #

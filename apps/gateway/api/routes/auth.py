@@ -1,38 +1,49 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from fastapi import HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 
-from apps.common.infrastructure.repository.user import UserRepo
-from apps.common.models.user import User, UserIn, FormUserReg
-from apps.gateway.auth.crypto import crypt_password, check_password
+from apps.common.dao.user import UserIn
+from apps.gateway.services.user import UserService
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/users")
 
 
-@router.get("/login", include_in_schema=True)
-async def login(user_in: UserIn, user_repo: FromDishka[UserRepo]) -> JSONResponse:
-    user: User = await user_repo.find_user_by_email(email=user_in.email)
-    if user is None:
-        raise HTTPException(
-            status_code=400, detail=f"User with email {user_in.email} not exists"
-        )
+@router.post("/login", include_in_schema=True)
+async def login(user_in: UserIn, user_service: FromDishka[UserService]) -> JSONResponse:
+    token = await user_service.login(user_in=user_in)
+    response = JSONResponse(status_code=200, content={})
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=True,
+        max_age=60 * 60 * 24,
+    )
+    return response
 
-    if not check_password(user_in.password, user.password_hash):
-        raise HTTPException(status_code=403, detail=f"Incorrect password")
 
-    return JSONResponse(content={"status": "ok"})
-
-
-@router.post("/", response_model=User)
+@router.post("/register", include_in_schema=True)
 async def create_user(
-    reg_form: FormUserReg, user_repo: FromDishka[UserRepo]
+    user_in: UserIn,
+    user_service: FromDishka[UserService],
 ) -> RedirectResponse:
-    user = await user_repo.find_user_by_email(email=reg_form.email)
-    if user is not None:
-        raise HTTPException(
-            status_code=400, detail=f"User with email {reg_form.email} already exists"
-        )
 
-    reg_form.password = crypt_password(reg_form.password)
-    await user_repo.save_user(user=reg_form)
-    return RedirectResponse(url="/login")
+    user = user_service.get_user(email=user_in.email)
+
+    if user is not None:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    token = await user_service.register(user_in=user_in)
+    response = RedirectResponse(url="/app", status_code=303)
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=True,
+        max_age=60 * 60 * 24,
+    )
+
+    return response

@@ -1,7 +1,4 @@
-from apps.gateway.core.protocols.i_engine import IEngineService
-
-
-class EngineService(IEngineService):
+class EngineService:
     def __init__(self, pandora, kafka):
         self._pandora = pandora
         self._kafka = kafka

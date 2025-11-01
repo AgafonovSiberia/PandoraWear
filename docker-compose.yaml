@@ -1,0 +1,161 @@
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
+    tag: "{{.Name}}"
+
+
+services:
+  gateway:
+    container_name: pandora-gateway
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    env_file:
+      .env
+    ports:
+      - "8000:8000"
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    restart: on-failure
+    networks:
+      - log_app
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    logging: *default-logging
+    volumes:
+      - .:/apps
+
+  redis:
+    image: redis:8.2
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - log_app
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrations:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./apps/common/infrastructure/database/migrations:/app/apps/common/infrastructure/database/migrations
+    env_file:
+      - .env
+    command: ["uv", "run", "alembic", "-c", "alembic.ini", "upgrade", "head"]
+    networks:
+      - log_app
+
+  postgres:
+    image: postgres:18.0
+    command: postgres -c config_file=/etc/postgres.conf
+    volumes:
+      - postgres_data:/var/lib/postgres/data/
+      - ./postgres/postgresql.conf:/etc/postgres.conf
+    env_file:
+      - .env
+    ports:
+      - "6666:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U agafonov -d pandora" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+    networks:
+      - log_app
+
+  #  zookeeper:
+  #    container_name: pandora-zookeeper
+  #    image: confluentinc/cp-zookeeper:7.6.0
+  #    labels:
+  #      logging: "promtail"
+  #      logging_jobname: "containerlogs"
+  #    environment:
+  #      ZOOKEEPER_CLIENT_PORT: 2181
+  #      ZOOKEEPER_TICK_TIME: 2000
+  #    ports:
+  #      - "2181:2181"
+  #    volumes:
+  #      - zookeeper_data:/var/lib/zookeeper/data
+  #      - zookeeper_log:/var/lib/zookeeper/log
+  #    networks:
+  #      - log_app
+  #    logging: *default-logging
+  #
+  #  kafka:
+  #    container_name: pandora-kafka
+  #    image: confluentinc/cp-kafka:7.6.0
+  #    labels:
+  #      logging: "promtail"
+  #      logging_jobname: "containerlogs"
+  #    ports:
+  #      - "29092:29092"
+  #    expose:
+  #      - "9092"
+  #    env_file:
+  #      - .env
+  #    depends_on:
+  #      - zookeeper
+  #    volumes:
+  #      - kafka_data:/var/lib/kafka/data
+  #    networks:
+  #      - log_app
+  #    logging: *default-logging
+  #
+  #  kafka-init:
+  #    container_name: pandora-kafka-init
+  #    image: confluentinc/cp-kafka:7.6.0
+  #    labels:
+  #      logging: "promtail"
+  #      logging_jobname: "containerlogs"
+  #    depends_on:
+  #      - kafka
+  #    entrypoint: /init-topics.sh
+  #    volumes:
+  #      - ./apps/common/init-topics.sh:/init-topics.sh:ro
+  #    networks:
+  #      - log_app
+  #    logging: *default-logging
+  #
+  #  kafdrop:
+  #    container_name: pandora-kafdrop
+  #    image: obsidiandynamics/kafdrop
+  #    labels:
+  #      logging: "promtail"
+  #      logging_jobname: "containerlogs"
+  #    ports:
+  #      - "9000:9000"
+  #    environment:
+  #      KAFKA_BROKER_CONNECT: kafka:9092
+  #    depends_on:
+  #      - kafka
+  #    networks:
+  #      - log_app
+  #    logging: *default-logging
+
+volumes:
+  postgres_data:
+  kafka_data:
+  redis_data:
+  zookeeper_data:
+  zookeeper_log:
+
+networks:
+  log_app:
+    external: true
+    name: app
