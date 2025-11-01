@@ -29,6 +29,8 @@ services:
     logging: *default-logging
     volumes:
       - .:/apps
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   redis:
     image: redis:8.2
@@ -39,6 +41,7 @@ services:
       - redis_data:/data
     networks:
       - log_app
+
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s

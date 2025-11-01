@@ -1,0 +1,40 @@
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
+    tag: "{{.Name}}"
+
+
+services:
+  gateway:
+    container_name: pandora-gateway
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    env_file:
+      .env
+    environment:
+      DEBUG_MODE: 1
+    ports:
+      - "8000:8000"
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    restart: on-failure
+    networks:
+      - log_app
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    logging: *default-logging
+    volumes:
+      - .:/apps
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  log_app:
+    external: true
+    name: app

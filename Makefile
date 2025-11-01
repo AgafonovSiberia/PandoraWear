@@ -1,6 +1,9 @@
 build:
 	docker compose -f docker-compose.yaml up -d --build
 
+build-debug:
+	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up -d --build
+
 down:
 	docker compose -f docker-compose.yaml down
 

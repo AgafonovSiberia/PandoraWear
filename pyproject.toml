@@ -4,25 +4,82 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
-    "aiohttp>=3.13.1",
+    "aiohttp==3.13.2",
     "aiokafka>=0.12.0",
     "alembic[asyncio]>=1.17.1",
     "asyncpg>=0.30.0",
     "bcrypt>=5.0.0",
     "black>=25.9.0",
     "config-reader>=0.8",
+    "debugpy>=1.8.17",
     "dishka>=1.7.2",
-    "fastapi[standard]>=0.120.1",
+    "fastapi[standard]==0.120.4",
     "myapplication>=0.1.0",
     "pydantic-settings>=2.11.0",
+    "pydevd-pycharm>=253.27864.50",
     "pyjwt>=2.10.1",
     "redis>=7.0.1",
     "sqlalchemy>=2.0.44",
-    "tools>=1.0.6",
+    "tools==1.0.10",
 ]
 
-[tool.ruff.per-file-ignores]
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+line-length = 120
+indent-width = 4
+
+target-version = "py313"
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+ignore = ["E501"]
+unfixable = ["B"]
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]
+"**/{tests,docs,tools}/*" = ["E402"]
 "*.py" = ["F401"]
 
-[tool.ruff.flake8-tidy-imports.banned-api]
-"dishka.inject" = "Импортируй inject только из dishka.integrations.fastapi"
+[dependency-groups]
+dev = [
+    "ruff>=0.14.3",
+]

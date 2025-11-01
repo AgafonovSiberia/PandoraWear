@@ -1,6 +1,5 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from apps.common.dao.user import UserIn
