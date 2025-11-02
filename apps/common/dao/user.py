@@ -11,7 +11,12 @@ class UserDomain(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserIn(BaseModel):
+class UserInLogin(BaseModel):
+    email: str
+    password: str
+
+
+class UserInRegister(BaseModel):
     username: str = None
     email: str
     password: str

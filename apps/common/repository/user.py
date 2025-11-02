@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.common.core.protocols.repository import IUserRepo
-from apps.common.dao.user import UserIn, UserDomain, PandoraCredIn, PandoraCredDomain
+from apps.common.dao.user import PandoraCredDomain, PandoraCredIn, UserDomain, UserInRegister
 from apps.common.infrastructure.database.models.credentials import Credential
 from apps.common.infrastructure.database.models.user import User
 
@@ -16,7 +16,7 @@ class UserRepo(IUserRepo):
         user = res.scalar_one_or_none()
         return UserDomain.model_validate(user) if user else None
 
-    async def create(self, user_in: UserIn) -> UserDomain | None:
+    async def create(self, user_in: UserInRegister) -> UserDomain | None:
         user = User(**user_in.model_dump())
         self._session.add(user)
         await self._session.flush()

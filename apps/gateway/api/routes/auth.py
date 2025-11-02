@@ -2,14 +2,14 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 
-from apps.common.dao.user import UserIn
+from apps.common.dao.user import UserInLogin, UserInRegister
 from apps.gateway.services.user import UserService
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/users")
 
 
 @router.post("/login", include_in_schema=True)
-async def login(user_in: UserIn, user_service: FromDishka[UserService]) -> JSONResponse:
+async def login(user_in: UserInLogin, user_service: FromDishka[UserService]) -> JSONResponse:
     token = await user_service.login(user_in=user_in)
     response = JSONResponse(status_code=200, content={})
     response.set_cookie(
@@ -25,10 +25,9 @@ async def login(user_in: UserIn, user_service: FromDishka[UserService]) -> JSONR
 
 @router.post("/register", include_in_schema=True)
 async def create_user(
-    user_in: UserIn,
+    user_in: UserInRegister,
     user_service: FromDishka[UserService],
 ) -> RedirectResponse:
-
     user = user_service.get_user(email=user_in.email)
 
     if user is not None:
