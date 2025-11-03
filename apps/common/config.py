@@ -11,7 +11,7 @@ class AuthSettings(BaseSettings):
 
 
 class RedisSettings(BaseSettings):
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://redis:6379/0"
 
 
 class ProducerSettings(BaseSettings):
@@ -41,12 +41,14 @@ class DatabaseSettings(BaseSettings):
     @model_validator(mode="after")
     def assemble_db_url(self) -> "DatabaseSettings":
         if self.DB_URL is None:
-            self.DB_URL = PostgresDsn.build(scheme="postgresql+asyncpg",
-                                            host=self.POSTGRES_HOST,
-                                            port=self.POSTGRES_PORT,
-                                            username=self.POSTGRES_USER,
-                                            password=self.POSTGRES_PASSWORD,
-                                            path=self.POSTGRES_DB)
+            self.DB_URL = PostgresDsn.build(
+                scheme="postgresql+asyncpg",
+                host=self.POSTGRES_HOST,
+                port=self.POSTGRES_PORT,
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                path=self.POSTGRES_DB,
+            )
         return self
 
     # model_config = {"env_prefix": "DB_"}

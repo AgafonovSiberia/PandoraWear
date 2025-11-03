@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useRef, useEffect, useState } from 'react';
 import { api } from '../api/axios';
 
 export type CurrentUser = {
@@ -20,6 +20,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<CurrentUser>(null);
   const [loading, setLoading] = useState(true);
 
+  const didInit = useRef(false);
+
   const load = async () => {
     setLoading(true);
     try {
@@ -33,6 +35,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (didInit.current) return;        // ← второй вызов игнорим
+    didInit.current = true;
     void load();
   }, []);
 

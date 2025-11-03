@@ -3,10 +3,10 @@ import SignUpCard from './features/auth/SignUpCard'
 import LoginCard from './features/auth/LoginCard'
 
 import ProtectedLayout from './layouts/ProtectedLayout';
-import ProfilePage from './features/app/profile/ProfilePage';
-// import DevicesPage from './features/app/devices/DevicesPage';
+import ProfilePage from '@/features/app/profile/ProfilePage';
+import DevicesPage from '@/features/app/devices/DevicesPage';
 // import SettingsPage from './features/app/settings/SettingsPage';
-import MainAppLayout from './layouts/MainAppLayout';
+import MainAppLayout from '@/layouts/MainAppLayout';
 
 export default function App() {
   return (
@@ -18,12 +18,12 @@ export default function App() {
       <Route element={<ProtectedLayout />}>
         <Route element={<MainAppLayout />}>
           <Route path="/app/profile" element={<ProfilePage />} />
-          {/*<Route path="/app/devices" element={<DevicesPage />} />*/}
+          {<Route path="/app/devices" element={<DevicesPage />} />}
           {/*<Route path="/app/settings" element={<SettingsPage />} />*/}
         </Route>
       </Route>
 
-       <Route path="/" element={<Navigate to="/app/devices" replace />} />
+      <Route path="/" element={<Navigate to="/app/devices" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

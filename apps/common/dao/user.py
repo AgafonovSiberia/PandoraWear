@@ -9,8 +9,8 @@ class User(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class AuthUser(User):
-    ...
+
+class AuthUser(User): ...
 
 
 class UserDomain(User):
@@ -20,6 +20,7 @@ class UserDomain(User):
 class UserInLogin(BaseModel):
     email: str
     password: str
+
 
 class UserInRegister(BaseModel):
     username: str = None

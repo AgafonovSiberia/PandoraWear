@@ -4,7 +4,7 @@ from apps.common.config import AuthSettings
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IUserRepo
 from apps.common.dao.user import CreateUser, UserDomain, UserInLogin, UserInRegister
-from apps.gateway.auth.crypto import check_password, crypt_password
+from apps.gateway.auth.crypto import check_hashed_value, hash_value
 from apps.gateway.auth.token import generate_jwt
 
 
@@ -22,7 +22,7 @@ class UserService:
         new_user = CreateUser(
             username=user_in.username,
             email=user_in.email,
-            password_hash=crypt_password(user_in.password),
+            password_hash=hash_value(user_in.password),
         )
         user = await self.user_repo.create(user_in=new_user)
         return user
@@ -32,7 +32,7 @@ class UserService:
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
 
-        if not check_password(password=user_in.password, hash_password=user.password_hash):
+        if not check_hashed_value(password=user_in.password, hash_password=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
 
         return generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.secret_key)

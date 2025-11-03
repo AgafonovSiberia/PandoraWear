@@ -62,7 +62,7 @@ export default function LoginCard() {
             setServerError(null);
             const res = await api.post('/users/login', data);
             console.log('Авторизация успешна:', res.data);
-            navigate('/app')
+            navigate('/')
         } catch (e: any) {
             const err = extractApiError(e);
             const uxMessage = (() => {

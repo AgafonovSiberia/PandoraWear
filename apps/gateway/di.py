@@ -21,15 +21,17 @@ from apps.common.config import (
 from apps.common.core.protocols.broker.consumer import IConsumer, IConsumerSettings
 from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
 from apps.common.core.protocols.cache import ICache
-from apps.common.core.protocols.repository import IUserRepo
+from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
 from apps.common.dao.user import AuthUser
 from apps.common.infrastructure.broker.consumer import KafkaAsyncConsumer
 from apps.common.infrastructure.broker.producer import KafkaAsyncProducer
 from apps.common.infrastructure.cache.redis import RedisCache
 from apps.common.infrastructure.database.database import DatabaseCore
+from apps.common.repository.device import DeviceRepo
 from apps.common.repository.user import UserRepo
 from apps.gateway.common.context import UserContext
 from apps.gateway.services.auth import AuthService
+from apps.gateway.services.device import DeviceService
 from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session_manager import PandoraClientManager
 from apps.gateway.services.user import UserService
@@ -45,9 +47,7 @@ class DatabaseProvider(FastapiProvider):
         return DatabaseCore(db_settings)
 
     @provide(scope=Scope.REQUEST, provides=AsyncSession)
-    async def db_session(
-        self, database: DatabaseCore
-    ) -> AsyncGenerator[AsyncSession, Any]:
+    async def db_session(self, database: DatabaseCore) -> AsyncGenerator[AsyncSession, Any]:
         async with database.session_factory()() as session:
             yield session
 
@@ -82,9 +82,7 @@ class InfraProvider(FastapiProvider):
 
     @provide(scope=Scope.APP)
     async def tcp_connector(self) -> TCPConnector:
-        return TCPConnector(
-            limit=10, limit_per_host=2, ttl_dns_cache=300, enable_cleanup_closed=True
-        )
+        return TCPConnector(limit=10, limit_per_host=2, ttl_dns_cache=300, enable_cleanup_closed=True)
 
 
 class RepoProvider(FastapiProvider):
@@ -104,34 +102,29 @@ class ServiceProvider(FastapiProvider):
         return UserRepo(session=session)
 
     @provide(scope=Scope.REQUEST)
-    async def user_service(
-        self, user_repo: IUserRepo, cache: ICache, auth_settings: AuthSettings
-    ) -> UserService:
-        return UserService(
-            user_repo=user_repo, cache=cache, auth_settings=auth_settings
-        )
+    async def device_repo(self, session: AsyncSession) -> IDeviceRepo:
+        return DeviceRepo(session=session)
 
     @provide(scope=Scope.REQUEST)
-    async def auth_service(self,
-                           user_repo: IUserRepo,
-                           cache: ICache,
-                           auth_settings: AuthSettings
-                           ) -> AuthService:
+    async def user_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: AuthSettings) -> UserService:
+        return UserService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
+
+    @provide(scope=Scope.REQUEST)
+    async def auth_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: AuthSettings) -> AuthService:
         return AuthService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
 
     @provide(scope=Scope.REQUEST)
     async def auth_guard(self, request: Request, auth_service: AuthService) -> AuthUser:
         user = await auth_service.verify_request(request)
-        auth_user = AuthUser(id=user.id,
-                             username=user.username,
-                             email=user.email,
-                             active=user.active)
+        auth_user = AuthUser(id=user.id, username=user.username, email=user.email, active=user.active)
         return auth_user
 
+    @provide(scope=Scope.REQUEST)
+    async def device_service(self, user_repo: IUserRepo, device_repo: IDeviceRepo, cache: ICache) -> DeviceService:
+        return DeviceService(user_repo=user_repo, device_repo=device_repo, cache=cache)
+
     @provide(scope=Scope.APP)
-    async def pandora_manager(
-        self, tcp_connector: TCPConnector
-    ) -> PandoraClientManager:
+    async def pandora_manager(self, tcp_connector: TCPConnector) -> PandoraClientManager:
         return PandoraClientManager(connector=tcp_connector)
 
     @provide(scope=Scope.REQUEST)
@@ -141,13 +134,9 @@ class ServiceProvider(FastapiProvider):
         user_context: UserContext,
         user_repo: IUserRepo,
     ) -> PandoraClient:
-        return await pandora_client_manager.get_pandora_client(
-            user_id=user_context.user_id, user_repo=user_repo
-        )
+        return await pandora_client_manager.get_pandora_client(user_id=user_context.user_id, user_repo=user_repo)
 
 
 def create_container() -> AsyncContainer:
-    container = make_async_container(
-        ConfigProvider(), DatabaseProvider(), InfraProvider(), ServiceProvider()
-    )
+    container = make_async_container(ConfigProvider(), DatabaseProvider(), InfraProvider(), ServiceProvider())
     return container

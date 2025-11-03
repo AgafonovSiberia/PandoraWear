@@ -1,7 +1,7 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import (
-    create_async_engine,
+    AsyncSession,
     async_sessionmaker,
+    create_async_engine,
 )
 
 from apps.common.config import DatabaseSettings
@@ -10,7 +10,6 @@ from apps.common.config import DatabaseSettings
 class DatabaseCore:
     def __init__(self, settings: DatabaseSettings):
         self._settings = settings
-        print(f"Настройки: {settings.DB_URL}")
         self._engine = create_async_engine(
             str(settings.DB_URL),
             echo=False,
