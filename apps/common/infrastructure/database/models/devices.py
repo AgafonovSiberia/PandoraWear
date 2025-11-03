@@ -41,7 +41,6 @@ class Device(Base):
 
     __table_args__ = (UniqueConstraint("name", name="uq_devices_name"),)
 
-
     def mark_used(self) -> None:
         """Обновить last_used_at."""
         self.last_used_at = datetime.now(UTC)

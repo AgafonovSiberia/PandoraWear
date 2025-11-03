@@ -21,19 +21,13 @@ class PandoraClientManager:
 
     async def start(self) -> None:
         if self._garbage_session_collector_task is not None:
-            self._garbage_session_collector_task = asyncio.create_task(
-                self._garbage_session_collect()
-            )
+            self._garbage_session_collector_task = asyncio.create_task(self._garbage_session_collect())
 
     async def _garbage_session_collect(self) -> None:
         try:
             while True:
                 await asyncio.sleep(GARBAGE_COLLECT_INTERVAL)
-                expired_sessions = [
-                    user_id
-                    for user_id, session in self._sessions.items()
-                    if session.is_expired
-                ]
+                expired_sessions = [user_id for user_id, session in self._sessions.items() if session.is_expired]
                 for user_id in expired_sessions:
                     session = self._sessions.pop(user_id, None)
                     if not session:
@@ -47,20 +41,14 @@ class PandoraClientManager:
             await session.close()
         self._sessions.clear()
 
-    async def _get_session_id_by_user(
-        self, user_id: int, user_repo: IUserRepo
-    ) -> str | None:
+    async def _get_session_id_by_user(self, user_id: int, user_repo: IUserRepo) -> str | None:
         user = await user_repo.get(user_id=user_id)
         if not user:
             return None
         return user.session_id
 
-    async def get_or_create_session(
-        self, user_id: int, user_repo: IUserRepo
-    ) -> PandoraSession:
-        session_id = await self._get_session_id_by_user(
-            user_id=user_id, user_repo=IUserRepo
-        )
+    async def get_or_create_session(self, user_id: int, user_repo: IUserRepo) -> PandoraSession:
+        session_id = await self._get_session_id_by_user(user_id=user_id, user_repo=IUserRepo)
         if not session_id:
             return await self._create_session(user_id=user_id, user_repo=user_repo)
         session = self._sessions.get(session_id, None)
@@ -68,9 +56,7 @@ class PandoraClientManager:
             return await self._create_session(user_id=user_id, user_repo=user_repo)
         return session
 
-    async def _create_session(
-        self, user_id: int, user_repo: IUserRepo
-    ) -> PandoraSession:
+    async def _create_session(self, user_id: int, user_repo: IUserRepo) -> PandoraSession:
         cred = await user_repo.get_credentials(user_id=user_id)
         session = PandoraSession(connector=self._connector, cred=cred)
         await session.login()
@@ -86,8 +72,6 @@ class PandoraClientManager:
         # )
         return self._sessions.get(session_id, None)
 
-    async def get_pandora_client(
-        self, user_id: int, user_repo: IUserRepo
-    ) -> PandoraClient:
+    async def get_pandora_client(self, user_id: int, user_repo: IUserRepo) -> PandoraClient:
         session = await self.get_or_create_session(user_id=user_id, user_repo=user_repo)
         return PandoraClient(session=session)
