@@ -7,7 +7,7 @@ from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session import PandoraSession
 
 MAX_SESSION = 4
-GARBAGE_COLLECT_INTERVAL = 60 * 60 * 24
+GARBAGE_COLLECT_INTERVAL = 60 * 60
 
 
 class PandoraClientManager:

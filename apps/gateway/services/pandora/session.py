@@ -5,12 +5,12 @@ import time
 from aiohttp import ClientSession, CookieJar, TCPConnector
 
 from apps.common.dao.user import PandoraCredDomain
-from apps.gateway.services.pandora import AuthResponseField, excepton, RequestMethod
+from apps.gateway.services.pandora import AuthResponseField, RequestMethod, excepton
 from apps.gateway.services.pandora.const.url import URL
 
 TTL_LOGIN = 5
 LOGIN_TIMEOUT = 10
-SESSION_LIFE_TIME = 60 * 60 * 24
+SESSION_LIFE_TIME = 60 * 60 * 3
 
 logger = logging.getLogger(__name__)
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"

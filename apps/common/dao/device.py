@@ -10,7 +10,6 @@ class DeviceIn(BaseModel):
     name: str
     token_hash: bytes
     expires_at: datetime
-    revoked_at: datetime = None
     last_used_at: datetime = None
     last_rotated_at: datetime
 
@@ -21,7 +20,6 @@ class DeviceDomain(BaseModel):
     name: str
     token_hash: bytes
     expires_at: datetime = None
-    revoked_at: datetime | None = None
     last_used_at: datetime = None
     last_rotated_at: datetime = None
 

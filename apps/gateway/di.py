@@ -12,11 +12,11 @@ from fastapi import Request
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from apps.common.config import (
-    AuthSettings,
     ConsumerSettings,
     DatabaseSettings,
     ProducerSettings,
     RedisSettings,
+    SecureSettings,
 )
 from apps.common.core.protocols.broker.consumer import IConsumer, IConsumerSettings
 from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
@@ -39,11 +39,8 @@ from apps.gateway.services.user import UserService
 
 class DatabaseProvider(FastapiProvider):
     @provide(scope=Scope.APP)
-    async def db_settings(self) -> DatabaseSettings:
-        return DatabaseSettings()
-
-    @provide(scope=Scope.APP)
-    async def database_core(self, db_settings: DatabaseSettings) -> DatabaseCore:
+    async def database_core(self) -> DatabaseCore:
+        db_settings = DatabaseSettings()
         return DatabaseCore(db_settings)
 
     @provide(scope=Scope.REQUEST, provides=AsyncSession)
@@ -63,8 +60,8 @@ class ConfigProvider(FastapiProvider):
         return ConsumerSettings()
 
     @provide(scope=Scope.APP)
-    async def auth_settings(self) -> AuthSettings:
-        return AuthSettings()
+    async def secure_settings(self) -> SecureSettings:
+        return SecureSettings()
 
 
 class InfraProvider(FastapiProvider):
@@ -107,11 +104,11 @@ class ServiceProvider(FastapiProvider):
         return DeviceRepo(session=session)
 
     @provide(scope=Scope.REQUEST)
-    async def user_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: AuthSettings) -> UserService:
+    async def user_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: SecureSettings) -> UserService:
         return UserService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
 
     @provide(scope=Scope.REQUEST)
-    async def auth_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: AuthSettings) -> AuthService:
+    async def auth_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: SecureSettings) -> AuthService:
         return AuthService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
 
     @provide(scope=Scope.REQUEST)

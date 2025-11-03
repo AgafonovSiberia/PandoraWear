@@ -37,18 +37,10 @@ class Device(Base):
         DateTime(timezone=True), nullable=True, comment="Когда токен последний раз ротировался"
     )
 
-    revoked_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, comment="Когда токен был отозван"
-    )
-
     user: Mapped["User"] = relationship(back_populates="devices", lazy="joined")
 
     __table_args__ = (UniqueConstraint("name", name="uq_devices_name"),)
 
-    def is_active(self) -> bool:
-        """Проверка, действителен ли токен (по revoked_at и expires_at)."""
-        now = datetime.now(UTC)
-        return (self.revoked_at is None) and (self.expires_at > now)
 
     def mark_used(self) -> None:
         """Обновить last_used_at."""

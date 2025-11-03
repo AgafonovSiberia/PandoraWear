@@ -2,12 +2,12 @@ from pydantic import Field, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings
 
 
-class AuthSettings(BaseSettings):
-    secret_key: str = "ecrlnkognor"
-    jwt_ttl: int = 60 * 60 * 24
+class SecureSettings(BaseSettings):
+    SECRET_KEY: str = "ecrlnkognor"
+    JWT_TTL: int = 60 * 60 * 24
     jwt_algorithm: str = "HS256"
 
-    model_config = {"env_prefix": "AUTH_"}
+    model_config = {"env_prefix": "SECURE_"}
 
 
 class RedisSettings(BaseSettings):

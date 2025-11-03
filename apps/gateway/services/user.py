@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 
-from apps.common.config import AuthSettings
+from apps.common.config import SecureSettings
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IUserRepo
 from apps.common.dao.user import CreateUser, UserDomain, UserInLogin, UserInRegister
@@ -9,7 +9,7 @@ from apps.gateway.auth.token import generate_jwt
 
 
 class UserService:
-    def __init__(self, user_repo: IUserRepo, cache: ICache, auth_settings: AuthSettings) -> None:
+    def __init__(self, user_repo: IUserRepo, cache: ICache, auth_settings: SecureSettings) -> None:
         self.user_repo = user_repo
         self.cache = cache
         self.auth_settings = auth_settings
@@ -35,7 +35,7 @@ class UserService:
         if not check_hashed_value(password=user_in.password, hash_password=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
 
-        return generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.secret_key)
+        return generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY)
 
     async def set_pandora_credentials(self, user_id: int, login: str, password: str) -> None: ...
 
