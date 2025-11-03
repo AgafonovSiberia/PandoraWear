@@ -15,7 +15,9 @@ class DatabaseCore:
             echo=False,
             pool_pre_ping=True,
         )
-        self._session_factory = async_sessionmaker(self._engine, expire_on_commit=False, class_=AsyncSession)
+        self._session_factory = async_sessionmaker(
+            self._engine, autoflush=True, expire_on_commit=False, class_=AsyncSession
+        )
 
     @property
     def engine(self):

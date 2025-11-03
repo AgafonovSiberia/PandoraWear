@@ -49,7 +49,8 @@ class DatabaseProvider(FastapiProvider):
     @provide(scope=Scope.REQUEST, provides=AsyncSession)
     async def db_session(self, database: DatabaseCore) -> AsyncGenerator[AsyncSession, Any]:
         async with database.session_factory()() as session:
-            yield session
+            async with session.begin():
+                yield session
 
 
 class ConfigProvider(FastapiProvider):
