@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql.sqltypes import Integer, String, Boolean
+from sqlalchemy.sql.sqltypes import Boolean, Integer, LargeBinary, String
 
 from apps.common.infrastructure.database.models.base import Base
 from apps.common.infrastructure.database.models.credentials import Credential
@@ -15,7 +15,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(
         String(320), unique=True, index=True, nullable=True
     )
-    password_hash: Mapped[str] = mapped_column(String(512), nullable=False)
+    password_hash: Mapped[bytes] = mapped_column(LargeBinary(512), nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     credentials: Mapped[Credential | None] = relationship(

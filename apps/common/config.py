@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings
 
 class AuthSettings(BaseSettings):
     secret_key: str = "ecrlnkognor"
+    jwt_ttl: int = 60 * 60 * 24
+    jwt_algorithm: str = "HS256"
 
     model_config = {"env_prefix": "AUTH_"}
 

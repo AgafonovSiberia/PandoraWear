@@ -1,12 +1,11 @@
-import datetime
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any, Mapping, Optional
 
 import jwt
 
-
 ALGORITHM = "HS256"
 TTL_TOKEN = 60 * 24
+
 
 def generate_jwt(
     payload: Mapping[str, Any],
@@ -14,7 +13,7 @@ def generate_jwt(
     issuer: Optional[str] = "pandora-api",
     audience: Optional[str] = None,
 ) -> str:
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(UTC)
 
     claims: dict[str, Any] = dict(payload)
     claims.setdefault("iat", now)

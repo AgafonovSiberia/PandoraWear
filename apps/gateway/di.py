@@ -2,32 +2,34 @@ from typing import Any, AsyncGenerator
 
 from aiohttp import TCPConnector
 from dishka import (
-    Scope,
-    provide,
-    make_async_container,
     AsyncContainer,
+    Scope,
+    make_async_container,
+    provide,
 )
 from dishka.integrations.fastapi import FastapiProvider
 from fastapi import Request
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from apps.common.config import (
-    RedisSettings,
+    AuthSettings,
+    ConsumerSettings,
     DatabaseSettings,
     ProducerSettings,
-    ConsumerSettings,
-    AuthSettings,
+    RedisSettings,
 )
-from apps.common.core.protocols.broker.consumer import IConsumerSettings, IConsumer
+from apps.common.core.protocols.broker.consumer import IConsumer, IConsumerSettings
 from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IUserRepo
+from apps.common.dao.user import AuthUser
 from apps.common.infrastructure.broker.consumer import KafkaAsyncConsumer
 from apps.common.infrastructure.broker.producer import KafkaAsyncProducer
 from apps.common.infrastructure.cache.redis import RedisCache
 from apps.common.infrastructure.database.database import DatabaseCore
 from apps.common.repository.user import UserRepo
 from apps.gateway.common.context import UserContext
+from apps.gateway.services.auth import AuthService
 from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session_manager import PandoraClientManager
 from apps.gateway.services.user import UserService
@@ -108,6 +110,23 @@ class ServiceProvider(FastapiProvider):
         return UserService(
             user_repo=user_repo, cache=cache, auth_settings=auth_settings
         )
+
+    @provide(scope=Scope.REQUEST)
+    async def auth_service(self,
+                           user_repo: IUserRepo,
+                           cache: ICache,
+                           auth_settings: AuthSettings
+                           ) -> AuthService:
+        return AuthService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
+
+    @provide(scope=Scope.REQUEST)
+    async def auth_guard(self, request: Request, auth_service: AuthService) -> AuthUser:
+        user = await auth_service.verify_request(request)
+        auth_user = AuthUser(id=user.id,
+                             username=user.username,
+                             email=user.email,
+                             active=user.active)
+        return auth_user
 
     @provide(scope=Scope.APP)
     async def pandora_manager(

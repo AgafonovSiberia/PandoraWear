@@ -1,20 +1,25 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class UserDomain(BaseModel):
+class User(BaseModel):
     id: int
-    username: str = None
+    username: str
     email: str
-    password_hash: str
     active: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+class AuthUser(User):
+    ...
+
+
+class UserDomain(User):
+    password_hash: bytes
 
 
 class UserInLogin(BaseModel):
     email: str
     password: str
-
 
 class UserInRegister(BaseModel):
     username: str = None
@@ -25,7 +30,7 @@ class UserInRegister(BaseModel):
 class CreateUser(BaseModel):
     username: str
     email: str
-    password_hash: str
+    password_hash: bytes
 
 
 class PandoraCredIn(BaseModel):

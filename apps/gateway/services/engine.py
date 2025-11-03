@@ -9,7 +9,7 @@ class EngineService:
         await self._kafka.publish(
             {
                 "user": str(user_id),
-                "device": str(device_id),
+                "devices": str(device_id),
                 "action": action,
             }
         )

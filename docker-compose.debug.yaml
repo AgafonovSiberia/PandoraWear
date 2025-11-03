@@ -30,9 +30,19 @@ services:
         condition: service_completed_successfully
     logging: *default-logging
     volumes:
-      - .:/apps
+        - ./apps:/app/apps
+        - /app/__pycache__
+        - /app/.venv
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    command: >
+      uvicorn apps.gateway.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --reload-dir /app
+      --reload-include *.py
+      --reload-exclude "alembic/versions/*,__pycache__/*,.git/*"
 
 networks:
   log_app:

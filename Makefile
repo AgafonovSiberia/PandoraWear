@@ -4,11 +4,15 @@ build:
 build-debug:
 	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up -d --build
 
+
+down-debug:
+	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml down
+
 down:
 	docker compose -f docker-compose.yaml down
 
-log:
-	docker compose -f docker-compose.yaml logs -f
+log-debug:
+	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml logs -f
 
 .PHONY: migration-create
 migration-create:
