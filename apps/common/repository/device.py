@@ -45,4 +45,3 @@ class DeviceRepo(IDeviceRepo):
         if not device:
             return
         await self._session.execute(delete(Device).where(Device.id == device_id))
-        # await self._session.commit()
