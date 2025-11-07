@@ -1,16 +1,9 @@
-class EngineService:
-    def __init__(self, pandora, kafka):
-        self._pandora = pandora
-        self._kafka = kafka
+from apps.common.core.protocols.repository import IUserRepo
+from apps.gateway.services.pandora.client import PandoraClient
 
-    async def ping(self, user_id, device_id, action):
-        await self._pandora.check_vehicle_state(device_id)
-        # публикуем команду
-        await self._kafka.publish(
-            {
-                "user": str(user_id),
-                "devices": str(device_id),
-                "action": action,
-            }
-        )
-        return "evt_" + str(device_id)  # идентификатор события
+
+class EngineService:
+    def __init__(self, user_repo: IUserRepo, pandora_client: PandoraClient):
+        self._pandora = pandora_client
+        self._user_repo = user_repo
+

@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.common.const import ServiceName
 from apps.common.core.protocols.repository import IUserRepo
 from apps.common.dao.user import CreateUser, PandoraCredDomain, PandoraCredIn, UserDomain
 from apps.common.infrastructure.database.models.credentials import Credential
@@ -35,12 +36,18 @@ class UserRepo(IUserRepo):
         user.active = False
         self._session.add(user)
 
-    async def upsert_credentials(self, pandora_cred: PandoraCredIn) -> None:
+    async def upsert_pandora_credentials(self, pandora_cred: PandoraCredIn) -> None:
         cred = await self._session.get(Credential, pandora_cred.user_id)
         cred.pandora_login = pandora_cred.login
         cred.pandora_password = pandora_cred.password
         self._session.add(cred)
 
-    async def get_credentials(self, user_id: int) -> PandoraCredDomain:
-        cred = await self._session.get(Credential, user_id)
-        return PandoraCredDomain.model_validate(cred) if cred else None
+    async def get_pandora_credentials(self, user_id: int) -> PandoraCredDomain | None:
+        res = await self._session.execute(
+            select(Credential).where(Credential.user_id == user_id, Credential.service == ServiceName.PANDORA)
+        )
+        cred = res.scalar_one_or_none()
+        if not cred:
+            return None
+
+        return PandoraCredDomain.model_validate(**cred.creds) if cred and cred.creds else None

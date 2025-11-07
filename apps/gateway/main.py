@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from apps.gateway.api import get_api_router
 from apps.gateway.di import create_container
+from apps.gateway.services.pandora.session_manager import PandoraClientManager
 
 if os.getenv("DEBUG_MODE") == "1":
     import pydevd
@@ -20,10 +21,10 @@ if os.getenv("DEBUG_MODE") == "1":
         suspend=False,
     )
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    yield
+#
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     yield
 
 
 ORIGINS = [
@@ -33,8 +34,20 @@ ORIGINS = [
 
 
 def create_app() -> FastAPI:
-    fastapi = FastAPI(title="Pandora Gateway API", version="1.0.0", lifespan=lifespan)
     container = create_container()
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        pandora_manager = await container.get(PandoraClientManager)
+        await pandora_manager.start()
+        try:
+            yield
+        finally:
+            await pandora_manager.stop()
+            await container.close()
+
+    fastapi = FastAPI(title="Pandora Gateway API", version="1.0.0", lifespan=lifespan)
+
     fastapi.add_middleware(
         CORSMiddleware,
         allow_origins=ORIGINS,

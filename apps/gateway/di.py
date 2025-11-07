@@ -22,6 +22,7 @@ from apps.common.core.protocols.broker.consumer import IConsumer, IConsumerSetti
 from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
+from apps.common.dao.device import AuthDevice
 from apps.common.dao.user import AuthUser
 from apps.common.infrastructure.broker.consumer import KafkaAsyncConsumer
 from apps.common.infrastructure.broker.producer import KafkaAsyncProducer
@@ -29,9 +30,9 @@ from apps.common.infrastructure.cache.redis import RedisCache
 from apps.common.infrastructure.database.database import DatabaseCore
 from apps.common.repository.device import DeviceRepo
 from apps.common.repository.user import UserRepo
-from apps.gateway.common.context import UserContext
 from apps.gateway.services.auth import AuthService
 from apps.gateway.services.device import DeviceService
+from apps.gateway.services.engine import EngineService
 from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session_manager import PandoraClientManager
 from apps.gateway.services.user import UserService
@@ -95,11 +96,6 @@ class RepoProvider(FastapiProvider):
 
 class ServiceProvider(FastapiProvider):
     @provide(scope=Scope.REQUEST)
-    async def user_context(self, request: Request) -> UserContext:
-        """Адаптер между FastAPI и внутренним контекстом запроса."""
-        return UserContext(user_id=request.state.user_id)
-
-    @provide(scope=Scope.REQUEST)
     async def user_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: SecureSettings) -> UserService:
         return UserService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
 
@@ -108,28 +104,36 @@ class ServiceProvider(FastapiProvider):
         return AuthService(user_repo=user_repo, cache=cache, auth_settings=auth_settings)
 
     @provide(scope=Scope.REQUEST)
-    async def auth_guard(self, request: Request, auth_service: AuthService) -> AuthUser:
+    async def auth_user_guard(self, request: Request, auth_service: AuthService) -> AuthUser:
         token, user = await auth_service.verify_request(request)
-        auth_user = AuthUser(id=user.id, username=user.username, email=user.email, active=user.active, token=token)
-        return auth_user
+        return AuthUser(id=user.id, username=user.username, email=user.email, active=user.active, token=token)
+
+    @provide(scope=Scope.REQUEST)
+    async def auth_device_guard(self, request: Request, device_service: DeviceService) -> AuthDevice:
+        device = await device_service.verify_request(request)
+
+        return AuthDevice(id=device.id, user_id=device.user_id, name=device.name)
 
     @provide(scope=Scope.REQUEST)
     async def device_service(self, user_repo: IUserRepo, device_repo: IDeviceRepo, cache: ICache) -> DeviceService:
         return DeviceService(user_repo=user_repo, device_repo=device_repo, cache=cache)
 
     @provide(scope=Scope.APP)
-    async def pandora_manager(self, tcp_connector: TCPConnector) -> PandoraClientManager:
-        return PandoraClientManager(connector=tcp_connector)
+    async def pandora_manager(self, cache: ICache, tcp_connector: TCPConnector) -> PandoraClientManager:
+        return PandoraClientManager(connector=tcp_connector, cache=cache)
 
     @provide(scope=Scope.REQUEST)
     async def pandora_client(
         self,
         pandora_client_manager: PandoraClientManager,
-        user_context: UserContext,
+        auth_device: AuthDevice,
         user_repo: IUserRepo,
     ) -> PandoraClient:
-        return await pandora_client_manager.get_pandora_client(user_id=user_context.user_id, user_repo=user_repo)
+        return await pandora_client_manager.get_pandora_client(auth_device=auth_device, user_repo=user_repo)
 
+    @provide(scope=Scope.REQUEST)
+    async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient):
+        return EngineService(user_repo=user_repo, pandora_client=pandora_client)
 
 def create_container() -> AsyncContainer:
     container = make_async_container(ConfigProvider(), DatabaseProvider(), InfraProvider(), ServiceProvider())

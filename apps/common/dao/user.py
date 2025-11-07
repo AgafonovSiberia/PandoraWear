@@ -34,21 +34,15 @@ class CreateUser(BaseModel):
     password_hash: bytes
 
 
-class PandoraCredIn(BaseModel):
-    user_id: int
-    email: str
-    password: str
-
-
-class PandoraCredDomain(BaseModel):
+class _PandoraCred(BaseModel):
     user_id: int
     email: str
     password: str
 
     model_config = ConfigDict(from_attributes=True)
 
+class PandoraCredIn(_PandoraCred): ...
 
-class UserData(BaseModel):
-    user_id: int
-    session_id: str
-    pandora: PandoraCredDomain
+class PandoraCredDomain(_PandoraCred): ...
+
+

@@ -39,9 +39,15 @@ class DeviceRepo(IDeviceRepo):
 
         return DeviceDomain.model_validate(result)
 
-
     async def delete_device(self, device_id: uuid.UUID):
         device = await self._session.execute(select(Device).where(Device.id == device_id))
         if not device:
             return
         await self._session.execute(delete(Device).where(Device.id == device_id))
+
+    async def get(self, device_id: uuid.UUID) -> DeviceDomain | None:
+        res = await self._session.execute(select(Device).where(Device.id == device_id))
+        device = res.scalar_one_or_none()
+        if not device:
+            return None
+        return DeviceDomain.model_validate(device)

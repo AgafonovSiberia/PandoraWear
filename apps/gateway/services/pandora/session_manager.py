@@ -2,25 +2,25 @@ import asyncio
 
 from aiohttp import TCPConnector
 
+from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IUserRepo
+from apps.common.dao.device import AuthDevice
 from apps.gateway.services.pandora.client import PandoraClient
 from apps.gateway.services.pandora.session import PandoraSession
 
 MAX_SESSION = 4
-GARBAGE_COLLECT_INTERVAL = 60 * 60
+GARBAGE_COLLECT_INTERVAL = 60 * 60 * 2
 
 
 class PandoraClientManager:
-    def __init__(
-        self,
-        connector: TCPConnector,
-    ) -> None:
+    def __init__(self, connector: TCPConnector, cache: ICache) -> None:
         self._connector: TCPConnector = connector
-        self._sessions: dict[str, PandoraSession] = {}
+        self._sessions: dict[int, PandoraSession] = {}
         self._garbage_session_collector_task: asyncio.Task[None] | None = None
+        self._cache: ICache = cache
 
     async def start(self) -> None:
-        if self._garbage_session_collector_task is not None:
+        if self._garbage_session_collector_task is None:
             self._garbage_session_collector_task = asyncio.create_task(self._garbage_session_collect())
 
     async def _garbage_session_collect(self) -> None:
@@ -37,41 +37,31 @@ class PandoraClientManager:
             return
 
     async def stop(self) -> None:
+        if self._garbage_session_collector_task:
+            self._garbage_session_collector_task.cancel()
+            try:
+                await self._garbage_session_collector_task
+            except asyncio.CancelledError:
+                pass
+            self._garbage_session_collector_task = None
+
         for session in self._sessions.values():
             await session.close()
         self._sessions.clear()
 
-    async def _get_session_id_by_user(self, user_id: int, user_repo: IUserRepo) -> str | None:
-        user = await user_repo.get(user_id=user_id)
-        if not user:
-            return None
-        return user.session_id
-
     async def get_or_create_session(self, user_id: int, user_repo: IUserRepo) -> PandoraSession:
-        session_id = await self._get_session_id_by_user(user_id=user_id, user_repo=IUserRepo)
-        if not session_id:
-            return await self._create_session(user_id=user_id, user_repo=user_repo)
-        session = self._sessions.get(session_id, None)
-        if not session:
-            return await self._create_session(user_id=user_id, user_repo=user_repo)
-        return session
+        session = self._sessions.get(user_id)
+        if session:
+            return session
+        return await self._create_session(user_id=user_id, user_repo=user_repo)
 
     async def _create_session(self, user_id: int, user_repo: IUserRepo) -> PandoraSession:
-        cred = await user_repo.get_credentials(user_id=user_id)
+        cred = await user_repo.get_pandora_credentials(user_id=user_id)
         session = PandoraSession(connector=self._connector, cred=cred)
         await session.login()
-        session_id = str(session.session_id)
+        self._sessions[user_id] = session
+        return session
 
-        self._sessions[session_id] = session
-        # await user_repo.save_pandora_session(
-        #     session=SessionIn(
-        #         user_id=user_id,
-        #         pandora_user_id=session.user_id,
-        #         pandora_session_id=session_id,
-        #     )
-        # )
-        return self._sessions.get(session_id, None)
-
-    async def get_pandora_client(self, user_id: int, user_repo: IUserRepo) -> PandoraClient:
-        session = await self.get_or_create_session(user_id=user_id, user_repo=user_repo)
+    async def get_pandora_client(self, auth_device: AuthDevice, user_repo: IUserRepo) -> PandoraClient:
+        session = await self.get_or_create_session(user_id=auth_device.user_id, user_repo=user_repo)
         return PandoraClient(session=session)

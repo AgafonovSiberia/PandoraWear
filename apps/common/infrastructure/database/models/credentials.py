@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import String
+from sqlalchemy.sql.schema import ForeignKey, UniqueConstraint
+from sqlalchemy.sql.sqltypes import Integer, String
 
 from apps.common.infrastructure.database.models.base import Base
 
@@ -12,12 +13,17 @@ if TYPE_CHECKING:
 
 class Credential(Base):
     __tablename__ = "credentials"
-
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "service",
+            name="uq_credentials_user_service",
+        ),
     )
-    pandora_login: Mapped[str] = mapped_column(String(255), nullable=False)
-    pandora_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    # Обратная связь
-    user: Mapped["User"] = relationship(back_populates="credentials", lazy="joined")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    service: Mapped[str] = mapped_column(String(64), nullable=False)
+    creds: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    user: Mapped["User"] = relationship(back_populates="credentials")

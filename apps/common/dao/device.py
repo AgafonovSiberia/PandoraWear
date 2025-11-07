@@ -13,17 +13,21 @@ class DeviceIn(BaseModel):
     last_used_at: datetime = None
     last_rotated_at: datetime
 
-
-class DeviceDomain(BaseModel):
+class _Device(BaseModel):
     id: uuid.UUID
     user_id: int
     name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class DeviceDomain(_Device):
     token_hash: bytes
     expires_at: datetime = None
     last_used_at: datetime = None
     last_rotated_at: datetime = None
 
-    model_config = ConfigDict(from_attributes=True)
+
+class AuthDevice(_Device): ...
 
 class DeviceRegData(BaseModel):
     name: str
