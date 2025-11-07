@@ -4,14 +4,14 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
-from apps.common.dao.device import DeviceDomain, DevicePairDataIn, DevicePairDataOut, DeviceRegData
+from apps.common.dao.device import DeviceDomain, DevicePairDataOut, DeviceRegData
 from apps.common.dao.user import AuthUser
 from apps.gateway.services.device import DeviceService
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/devices")
 
 
-@router.get("/", include_in_schema=True)
+@router.get("/", include_in_schema=True, description="Получить список всех устройств")
 async def get_all_devices(
     auth_user: FromDishka[AuthUser], device_service: FromDishka[DeviceService]
 ) -> list[DeviceDomain]:
@@ -19,7 +19,7 @@ async def get_all_devices(
     return devices or []
 
 
-@router.post("/pair/code", include_in_schema=True)
+@router.post("/pairing", include_in_schema=True, description="Получить код сопряжения")
 async def pair(
     device_data: DeviceRegData, auth_user: FromDishka[AuthUser], device_service: FromDishka[DeviceService]
 ) -> JSONResponse:
@@ -27,15 +27,18 @@ async def pair(
     return JSONResponse(status_code=status.HTTP_200_OK, content={"pair_code": code})
 
 
-@router.post("/pair", include_in_schema=True)
-async def pair(device_pair: DevicePairDataIn, device_service: FromDishka[DeviceService]) -> DevicePairDataOut:
-    paired_device_data = await device_service.pair(device_pair=device_pair)
+@router.post("/pairing/{code}", include_in_schema=True, description="Сопряжение устройства по коду")
+async def pair_confirm(code: str, device_service: FromDishka[DeviceService]) -> DevicePairDataOut:
+    paired_device_data = await device_service.pair(pair_code=code)
     return paired_device_data
 
-@router.delete("/{device_id}", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=True)
+
+@router.delete(
+    "/{device_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    include_in_schema=True,
+    description="Отозвать сопряжение с устройством",
+)
 async def revoke(device_id: uuid.UUID | str, device_service: FromDishka[DeviceService]) -> JSONResponse:
     await device_service.device_revoke(device_id=device_id)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={}
-    )
+    return JSONResponse(status_code=status.HTTP_200_OK, content={})

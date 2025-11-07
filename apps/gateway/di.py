@@ -132,9 +132,12 @@ class ServiceProvider(FastapiProvider):
         return await pandora_client_manager.get_pandora_client(auth_device=auth_device, user_repo=user_repo)
 
     @provide(scope=Scope.REQUEST)
-    async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient):
+    async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient) -> EngineService:
         return EngineService(user_repo=user_repo, pandora_client=pandora_client)
 
+
 def create_container() -> AsyncContainer:
-    container = make_async_container(ConfigProvider(), DatabaseProvider(), InfraProvider(), ServiceProvider())
+    container = make_async_container(
+        RepoProvider(), ConfigProvider(), DatabaseProvider(), InfraProvider(), ServiceProvider()
+    )
     return container

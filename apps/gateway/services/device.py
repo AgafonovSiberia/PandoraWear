@@ -7,14 +7,13 @@ from fastapi import HTTPException, Request, status
 
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
-from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataIn, DevicePairDataOut
+from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataOut
 from apps.gateway.auth.crypto import hash_value
 
 TOKEN_LEN = 32
 TOKEN_TTL = timedelta(days=60)
 TOKEN_CACHE_TTL_SECONDS = 60 * 30
 PAIR_CODE_TTL_SECONDS = 60
-
 
 
 class DeviceService:
@@ -55,8 +54,8 @@ class DeviceService:
         await self.cache.set_json(key=self.pair_code_key(code=code), data=data, ttl=PAIR_CODE_TTL_SECONDS)
         return code
 
-    async def pair(self, device_pair: DevicePairDataIn) -> DevicePairDataOut:
-        data = await self.cache.get_json(key=self.pair_code_key(code=device_pair.code))
+    async def pair(self, pair_code: str) -> DevicePairDataOut:
+        data = await self.cache.get_json(key=self.pair_code_key(code=pair_code))
         if not data:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="INVALID_CODE")
 
@@ -74,7 +73,6 @@ class DeviceService:
         device = await self.device_repo.upsert_device(device_in)
         await self.cache.set(key=self.device_key(device.id), value=str(token_hashed), ttl=TOKEN_CACHE_TTL_SECONDS)
         return DevicePairDataOut(device_id=device.id, token=raw_token)
-
 
     async def device_revoke(self, device_id: uuid.UUID | str):
         await self.cache.delete(key=str(device_id))
