@@ -35,7 +35,17 @@ class UserService:
         if not check_hashed_value(password=user_in.password, hash_password=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
 
-        return generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY)
+        token = generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY)
+        await self.cache.set_json(key=str(token), data={"user_id": user.id}, ttl=self.auth_settings.JWT_TTL)
+        return token
+
+    async def logout(self, user_id: int, token: str):
+        user = await self.user_repo.get(user_id=user_id)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
+
+        await self.cache.delete(token)
+
 
     async def set_pandora_credentials(self, user_id: int, login: str, password: str) -> None: ...
 

@@ -33,9 +33,19 @@ async def create_user(
     response = JSONResponse(status_code=status.HTTP_201_CREATED, content="USER_CREATED")
     return response
 
+
+@router.post("/logout", include_in_schema=True)
+async def logout_user(
+    auth_user: FromDishka[AuthUser],
+    user_service: FromDishka[UserService],
+) -> JSONResponse:
+    await user_service.logout(user_id=auth_user.id, token=auth_user.token)
+    response = JSONResponse(status_code=status.HTTP_200_OK, content="TOKEN_REJECTED")
+    return response
+
+
 @router.get("/me", include_in_schema=True)
 async def me(
     auth_user: FromDishka[AuthUser],
 ) -> AuthUser:
     return auth_user
-

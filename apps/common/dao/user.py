@@ -10,8 +10,8 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AuthUser(User): ...
-
+class AuthUser(User):
+    token: str
 
 class UserDomain(User):
     password_hash: bytes

@@ -3,9 +3,8 @@ from pydantic_settings import BaseSettings
 
 
 class SecureSettings(BaseSettings):
-    SECRET_KEY: str = "ecrlnkognor"
+    SECRET_KEY: str = "some_secret_key"
     JWT_TTL: int = 60 * 60 * 24
-    jwt_algorithm: str = "HS256"
 
     model_config = {"env_prefix": "SECURE_"}
 

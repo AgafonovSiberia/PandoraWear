@@ -48,6 +48,17 @@ services:
       timeout: 3s
       retries: 5
 
+  redis_insight:
+    image: redis/redisinsight:latest
+    container_name: pandora_redisinsight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    networks:
+      - log_app
+
   migrations:
     build:
       context: .

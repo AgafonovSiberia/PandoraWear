@@ -14,10 +14,13 @@ class AuthService:
         self.cache = cache
         self.settings = auth_settings
 
-    async def verify_request(self, request: Request) -> UserDomain:
+    async def verify_request(self, request: Request) -> tuple[str, UserDomain]:
         token = request.cookies.get("access_token")
         if not token:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="NO_TOKEN")
+
+        if not await self.cache.get(token):
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="TOKEN_EXPIRED")
 
         try:
             payload = decode_jwt(token=token, secret=self.settings.SECRET_KEY)
@@ -34,4 +37,4 @@ class AuthService:
         if not user:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="USER_NOT_FOUND")
 
-        return user
+        return token, user

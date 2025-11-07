@@ -113,8 +113,8 @@ class ServiceProvider(FastapiProvider):
 
     @provide(scope=Scope.REQUEST)
     async def auth_guard(self, request: Request, auth_service: AuthService) -> AuthUser:
-        user = await auth_service.verify_request(request)
-        auth_user = AuthUser(id=user.id, username=user.username, email=user.email, active=user.active)
+        token, user = await auth_service.verify_request(request)
+        auth_user = AuthUser(id=user.id, username=user.username, email=user.email, active=user.active, token=token)
         return auth_user
 
     @provide(scope=Scope.REQUEST)
