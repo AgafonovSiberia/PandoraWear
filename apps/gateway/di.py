@@ -88,20 +88,16 @@ class RepoProvider(FastapiProvider):
     async def user_repo(self, session: AsyncSession) -> IUserRepo:
         return UserRepo(session=session)
 
+    @provide(scope=Scope.REQUEST)
+    async def device_repo(self, session: AsyncSession) -> IDeviceRepo:
+        return DeviceRepo(session=session)
+
 
 class ServiceProvider(FastapiProvider):
     @provide(scope=Scope.REQUEST)
     async def user_context(self, request: Request) -> UserContext:
         """Адаптер между FastAPI и внутренним контекстом запроса."""
         return UserContext(user_id=request.state.user_id)
-
-    @provide(scope=Scope.REQUEST)
-    async def user_repo(self, session: AsyncSession) -> IUserRepo:
-        return UserRepo(session=session)
-
-    @provide(scope=Scope.REQUEST)
-    async def device_repo(self, session: AsyncSession) -> IDeviceRepo:
-        return DeviceRepo(session=session)
 
     @provide(scope=Scope.REQUEST)
     async def user_service(self, user_repo: IUserRepo, cache: ICache, auth_settings: SecureSettings) -> UserService:

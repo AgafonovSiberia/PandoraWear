@@ -34,8 +34,8 @@ class DeviceRepo(IDeviceRepo):
             .returning(Device)
         )
         result = await self._session.scalar(stmt)
+        await self._session.flush()
         await self._session.refresh(result)
-        await self._session.commit()
 
         return DeviceDomain.model_validate(result)
 

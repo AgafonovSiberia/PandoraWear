@@ -35,7 +35,7 @@ class UserService:
         if not check_hashed_value(password=user_in.password, hash_password=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
 
-        token = generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY)
+        token = generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY, ttl=self.auth_settings.JWT_TTL)
         await self.cache.set_json(key=str(token), data={"user_id": user.id}, ttl=self.auth_settings.JWT_TTL)
         return token
 

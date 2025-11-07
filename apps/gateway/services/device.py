@@ -12,8 +12,9 @@ from apps.gateway.auth.crypto import hash_value
 
 TOKEN_LEN = 32
 TOKEN_TTL = timedelta(days=60)
-PAIR_CODE_TTL_SECONDS = 60
 TOKEN_CACHE_TTL_SECONDS = 60 * 30
+PAIR_CODE_TTL_SECONDS = 60
+
 
 
 class DeviceService:

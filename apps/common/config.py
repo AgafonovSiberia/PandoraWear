@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 
 class SecureSettings(BaseSettings):
-    SECRET_KEY: str = "some_secret_key"
+    SECRET_KEY: str
     JWT_TTL: int = 60 * 60 * 24
 
     model_config = {"env_prefix": "SECURE_"}
@@ -14,14 +14,14 @@ class RedisSettings(BaseSettings):
 
 
 class ProducerSettings(BaseSettings):
-    bootstrap_servers: str = None
+    bootstrap_servers: str
 
     model_config = {"env_prefix": "PRODUCER_"}
 
 
 class ConsumerSettings(BaseSettings):
     topic_names: list[str] = Field(default_factory=list)
-    bootstrap_servers: str = None
+    bootstrap_servers: str
     group_id: str = None
     auto_offset_reset: str = "latest"
     enable_auto_commit: bool = True

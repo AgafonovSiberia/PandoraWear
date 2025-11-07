@@ -21,7 +21,6 @@ class UserRepo(IUserRepo):
         self._session.add(user)
         await self._session.flush()
         await self._session.refresh(user)
-        await self._session.commit()
         return UserDomain.model_validate(user) if user else None
 
     async def get(self, user_id: int) -> UserDomain:
@@ -31,7 +30,9 @@ class UserRepo(IUserRepo):
 
     async def delete(self, user_id: int) -> None:
         user = await self._session.get(User, user_id)
-        user.is_active = False
+        if not user:
+            return
+        user.active = False
         self._session.add(user)
 
     async def upsert_credentials(self, pandora_cred: PandoraCredIn) -> None:

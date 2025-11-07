@@ -12,13 +12,14 @@ def generate_jwt(
     secret: str,
     issuer: Optional[str] = "pandora-api",
     audience: Optional[str] = None,
+    ttl: int = TTL_TOKEN,
 ) -> str:
     now = datetime.now(UTC)
 
     claims: dict[str, Any] = dict(payload)
     claims.setdefault("iat", now)
     claims.setdefault("nbf", now)
-    claims.setdefault("exp", now + timedelta(minutes=TTL_TOKEN))
+    claims.setdefault("exp", now + timedelta(seconds=TTL_TOKEN))
     if issuer is not None:
         claims.setdefault("iss", issuer)
     if audience is not None:
