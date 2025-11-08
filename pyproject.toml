@@ -18,8 +18,12 @@ dependencies = [
     "pydantic-settings>=2.11.0",
     "pydevd-pycharm>=253.27864.50",
     "pyjwt>=2.10.1",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
     "redis>=7.0.1",
+    "ruff>=0.14.3",
     "sqlalchemy>=2.0.44",
+    "testcontainers>=4.13.2",
     "tools==1.0.10",
 ]
 
@@ -82,4 +86,10 @@ docstring-code-line-length = "dynamic"
 [dependency-groups]
 dev = [
     "ruff>=0.14.3",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "httpx>=0.28.1",
+    "testcontainers[postgres,redis]>=4.13.2",
+    "alembic>=1.17.1",
+    "psycopg[binary]>=3.2"
 ]
