@@ -90,7 +90,7 @@ export default function DevicesPage() {
         }
     };
     return (
-        <Stack spacing={3}>
+        <Stack spacing={1.5}>
             <Stack direction="row" alignItems="center" spacing={1}>
                 <Typography variant="h5" fontWeight={700} color="white">My devices</Typography>
                 <IconButton aria-label="refresh" onClick={load} disabled={isBusy} sx={{color: 'white'}}>
@@ -109,7 +109,7 @@ export default function DevicesPage() {
             )}
 
             {!loading && !error && (
-                <TableContainer component={Card} sx={{backgroundColor: '#111827', borderRadius: 2}}>
+                <TableContainer component={Card} sx={{backgroundColor: '#111827', borderRadius: 0.5}}>
                     <Table size="medium">
                         <TableHead>
                             <TableRow>
@@ -153,8 +153,7 @@ export default function DevicesPage() {
                 </TableContainer>
             )}
 
-            {/* Блок привязки нового устройства */}
-            <Card sx={{backgroundColor: '#111827', borderRadius: 2}}>
+            <Card sx={{backgroundColor: '#111827', borderRadius: 0.5}}>
                 <CardContent>
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                         <Box>

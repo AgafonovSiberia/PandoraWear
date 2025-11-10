@@ -1,129 +1,124 @@
-import {NavLink, Outlet, useNavigate} from 'react-router-dom';
-import {Avatar, Box, Divider, List, ListItemButton, ListItemText, Stack, Typography,} from '@mui/material';
-import {useUser} from '@/providers/UserProvider';
-import {api} from '@/api/axios';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { Outlet, useLocation, Link as RouterLink } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material';
+import DevicesIcon from '@mui/icons-material/Devices';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { AppTopBar } from './AppTopBar';
 
-export default function MainLayout() {
+const NAV_ITEMS = [
+  {
+    label: 'Устройства',
+    to: '/app/devices',
+    icon: <DevicesIcon fontSize="small" />,
+  },
+  {
+    label: 'Настройки',
+    to: '/app/settings',
+    icon: <SettingsIcon fontSize="small" />,
+  },
+];
 
-    const navigate = useNavigate();
-    const {user, setUser} = useUser();
-    const handleLogout = async () => {
-        try {
-            await api.post('/users/logout');
-        } catch {
-            // даже если запрос не удался (например, сеть), мы всё равно локально разлогиниваем
-        }
+export default function MainAppLayout() {
+  const location = useLocation();
 
-        // если хранишь токен в localStorage/sessionStorage - чистим здесь
-        // поправь ключ под свой вариант
-        localStorage.removeItem('access_token');
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: '#020817',
+        color: '#E5E7EB',
+      }}
+    >
+      <AppTopBar />
 
-        setUser(null);
-        navigate('/users/login', {replace: true});
-    };
+      <Box
+        component="main"
+        sx={{
+          pt: 10,
+          pb: 4,
+        }}
+      >
+        <Container
+          maxWidth="lg"
+          sx={{
+            display: 'flex',
+            gap: 2,
+          }}
+        >
+          <Box
+            sx={{
+              width: 200,
+              flexShrink: 0,
+              bgcolor: 'rgba(15,23,42,0.98)',
+              borderRadius: 0.5,
+              border: '0.5px solid rgba(148, 163, 253, 0.12)',
+              p: 0.6,
+            }}
+          >
 
-
-    return (
-        <Box display="flex" height="100dvh" bgcolor="#0f172a" color="white">
-            {/* Sidebar */}
-            <Box
-                width={240}
-                bgcolor="#1e293b"
-                py={2}
-                px={2}
-                display="flex"
-                flexDirection="column"
-                justifyContent="flex-start"
-            >
-                {/* User info */}
-                <Stack direction="row" spacing={1.2} alignItems="center" sx={{mb: 1}}>
-                    <Avatar
-                        sx={{
-                            width: 38,
-                            height: 38,
-                            bgcolor: 'rgba(59,130,246,0.25)',
-                            color: '#93c5fd',
-                            fontWeight: 700,
-                            fontSize: 18,
-                        }}
-                    >
-                        {(user?.username?.[0] || '?').toUpperCase()}
-                    </Avatar>
-
-                    <Box overflow="hidden">
-                        <Typography variant="subtitle1" fontWeight={700} noWrap>
-                            {user?.username ?? '—'}
-                        </Typography>
-                        <Typography
-                            variant="body2"
-                            sx={{color: 'rgba(255,255,255,0.65)'}}
-                            noWrap
-                            title={user?.email}
-                        >
-                            {user?.email ?? '—'}
-                        </Typography>
-                    </Box>
-
-                </Stack>
-
-                <Divider sx={{borderColor: 'rgba(255,255,255,0.08)', my: 1}}/>
-
-                {/* Navigation */}
-                <List sx={{py: 0}}>
-                    {[
-                        // { to: '/app/profile', label: 'Profile' },
-                        {to: '/app/devices', label: 'My devices'},
-                        {to: '/app/settings', label: 'Settings'},
-                    ].map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            style={{textDecoration: 'none'}}
-                            end
-                        >
-                            {({isActive}: { isActive: boolean; }) => (
-                                <ListItemButton
-                                    sx={{
-                                        borderRadius: 1.5,
-                                        mb: 0.5,
-                                        color: isActive ? 'white' : 'rgba(255,255,255,0.8)',
-                                        bgcolor: isActive ? 'rgba(59,130,246,0.15)' : 'transparent',
-                                        transition: 'background-color 0.2s ease',
-                                        '&:hover': {bgcolor: 'rgba(59,130,246,0.1)'},
-                                    }}
-                                >
-                                    <ListItemText primary={item.label}/>
-                                </ListItemButton>
-                            )}
-                        </NavLink>
-
-                    ))}
-                     <Box mt="auto">
-                <ListItemButton
-                    onClick={handleLogout}
+            <List dense disablePadding>
+              {NAV_ITEMS.map((item) => {
+                const active = location.pathname.startsWith(item.to);
+                return (
+                  <ListItemButton
+                    key={item.to}
+                    component={RouterLink}
+                    to={item.to}
+                    selected={active}
                     sx={{
-                        borderRadius: 1.5,
-                        color: 'rgba(248,250,252,0.9)',
+                      mt: 0.5,
+                      borderRadius: 0.3,
+                      px: 1.25,
+                      py: 0.75,
+                      '&.Mui-selected': {
+                        bgcolor: 'rgba(129, 140, 248, 0.16)',
                         '&:hover': {
-                            bgcolor: 'rgba(239,68,68,0.12)',
-                            color: '#fca5a5',
+                          bgcolor: 'rgba(129, 140, 248, 0.22)',
                         },
+                      },
+                      '&:hover': {
+                        bgcolor: 'rgba(148, 163, 253, 0.08)',
+                      },
                     }}
-                >
-                    <LogoutIcon fontSize="small" sx={{mr: 1}}/>
-                    <ListItemText primary="Logout"/>
-                </ListItemButton>
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 32,
+                        color: active ? 'primary.main' : 'text.secondary',
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        fontSize: 12,
+                        fontWeight: active ? 600 : 400,
+                      }}
+                    />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Box>
 
-                </Box>
-                </List>
-            </Box>
 
-
-        <Box flexGrow={1} p={4}>
-            <Outlet/>
-        </Box>
-</Box>
-)
-    ;
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            <Outlet />
+          </Box>
+        </Container>
+      </Box>
+    </Box>
+  );
 }

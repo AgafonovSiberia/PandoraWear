@@ -1,12 +1,14 @@
 import uuid
 from typing import Protocol
 
-from apps.common.dao.config import PandoraCredDomain, PandoraCredIn
+from apps.common.const import ServiceName
+from apps.common.dao.config import ConfigIn
 from apps.common.dao.device import DeviceDomain, DeviceIn
 from apps.common.dao.user import (
     CreateUser,
     UserDomain,
 )
+from apps.common.infrastructure.database.models import Credential
 
 
 class IUserRepo(Protocol):
@@ -17,9 +19,8 @@ class IUserRepo(Protocol):
 
 
 class IConfigRepo(Protocol):
-    async def upsert_pandora_credentials(self, pandora_cred: PandoraCredIn) -> PandoraCredDomain: ...
-    async def get_pandora_credentials(self, user_id: int) -> PandoraCredDomain: ...
-
+    async def upsert_config(self, config: ConfigIn) -> Credential | None: ...
+    async def get_config(self, user_id: int, service: ServiceName | str) -> Credential | None: ...
 
 class IDeviceRepo(Protocol):
     async def get_all_devices(self, user_id: int) -> list[DeviceDomain]: ...
