@@ -21,11 +21,6 @@ if os.getenv("DEBUG_MODE") == "1":
         suspend=False,
     )
 
-#
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     yield
-
 
 ORIGINS = [
     "http://localhost:5173",

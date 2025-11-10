@@ -4,7 +4,7 @@ import time
 
 from aiohttp import ClientSession, CookieJar, TCPConnector
 
-from apps.common.dao.user import PandoraCredDomain
+from apps.common.dao.config import PandoraCredDomain
 from apps.gateway.services.pandora import AuthResponseField, RequestMethod, excepton
 from apps.gateway.services.pandora.const.url import URL
 

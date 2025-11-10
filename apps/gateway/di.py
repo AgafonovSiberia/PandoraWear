@@ -21,16 +21,18 @@ from apps.common.config import (
 from apps.common.core.protocols.broker.consumer import IConsumer, IConsumerSettings
 from apps.common.core.protocols.broker.producer import IProducer, IProducerSettings
 from apps.common.core.protocols.cache import ICache
-from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
+from apps.common.core.protocols.repository import IConfigRepo, IDeviceRepo, IUserRepo
 from apps.common.dao.device import AuthDevice
 from apps.common.dao.user import AuthUser
 from apps.common.infrastructure.broker.consumer import KafkaAsyncConsumer
 from apps.common.infrastructure.broker.producer import KafkaAsyncProducer
 from apps.common.infrastructure.cache.redis import RedisCache
 from apps.common.infrastructure.database.database import DatabaseCore
+from apps.common.repository.config import ConfigRepo
 from apps.common.repository.device import DeviceRepo
 from apps.common.repository.user import UserRepo
 from apps.gateway.services.auth import AuthService
+from apps.gateway.services.config import ConfigService
 from apps.gateway.services.device import DeviceService
 from apps.gateway.services.engine import EngineService
 from apps.gateway.services.pandora.client import PandoraClient
@@ -93,6 +95,10 @@ class RepoProvider(FastapiProvider):
     async def device_repo(self, session: AsyncSession) -> IDeviceRepo:
         return DeviceRepo(session=session)
 
+    @provide(scope=Scope.REQUEST)
+    async def config_repo(self, session: AsyncSession) -> IConfigRepo:
+        return ConfigRepo(session=session)
+
 
 class ServiceProvider(FastapiProvider):
     @provide(scope=Scope.REQUEST)
@@ -118,6 +124,10 @@ class ServiceProvider(FastapiProvider):
     async def device_service(self, user_repo: IUserRepo, device_repo: IDeviceRepo, cache: ICache) -> DeviceService:
         return DeviceService(user_repo=user_repo, device_repo=device_repo, cache=cache)
 
+    @provide(scope=Scope.REQUEST)
+    async def config_service(self, user_repo: IUserRepo, config_repo: IConfigRepo) -> ConfigService:
+        return ConfigService(user_repo=user_repo, config_repo=config_repo)
+
     @provide(scope=Scope.APP)
     async def pandora_manager(self, cache: ICache, tcp_connector: TCPConnector) -> PandoraClientManager:
         return PandoraClientManager(connector=tcp_connector, cache=cache)
@@ -127,9 +137,9 @@ class ServiceProvider(FastapiProvider):
         self,
         pandora_client_manager: PandoraClientManager,
         auth_device: AuthDevice,
-        user_repo: IUserRepo,
+        config_repo: IConfigRepo,
     ) -> PandoraClient:
-        return await pandora_client_manager.get_pandora_client(auth_device=auth_device, user_repo=user_repo)
+        return await pandora_client_manager.get_pandora_client(auth_device=auth_device, config_repo=config_repo)
 
     @provide(scope=Scope.REQUEST)
     async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient) -> EngineService:

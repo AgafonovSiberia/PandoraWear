@@ -13,6 +13,7 @@ class User(BaseModel):
 class AuthUser(User):
     token: str
 
+
 class UserDomain(User):
     password_hash: bytes
 
@@ -32,17 +33,3 @@ class CreateUser(BaseModel):
     username: str
     email: str
     password_hash: bytes
-
-
-class _PandoraCred(BaseModel):
-    user_id: int
-    email: str
-    password: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class PandoraCredIn(_PandoraCred): ...
-
-class PandoraCredDomain(_PandoraCred): ...
-
-
