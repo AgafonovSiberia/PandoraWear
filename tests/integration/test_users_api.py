@@ -33,9 +33,9 @@ async def test_register_user_duplicate_email(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_login_user_success(client: AsyncClient):
     reg_payload = {
-        "email": "login@example.com",
-        "username": "login_user",
-        "password": "StrongPassw0rd!",
+        "email": "some_user@yandex.ru",
+        "username": "some_user",
+        "password": "some_password",
     }
     reg_resp = await client.post("/api/users/register", json=reg_payload)
     assert reg_resp.status_code in (codes.CREATED,)
@@ -50,19 +50,19 @@ async def test_login_user_success(client: AsyncClient):
     assert "access_token" in login_resp.cookies
 
 
-# @pytest.mark.asyncio
-# async def test_login_user_invalid_password(client: AsyncClient):
-#     reg_payload = {
-#         "email": "bad@example.com",
-#         "username": "bad",
-#         "password": "StrongPassw0rd!",
-#     }
-#     await client.post("/api/users/register", json=reg_payload)
-#
-#     login_payload = {
-#         "email": reg_payload["email"],
-#         "password": "wrong-password",
-#     }
-#     login_resp = await client.post("/api/users/login", json=login_payload)
-#
-#     assert login_resp.status_code in (codes.BAD_REQUEST,)
+@pytest.mark.asyncio
+async def test_login_user_invalid_password(client: AsyncClient):
+    reg_payload = {
+        "email": "some_user@yandex.ru",
+        "username": "some_user",
+        "password": "some_password",
+    }
+    await client.post("/api/users/register", json=reg_payload)
+
+    login_payload = {
+        "email": reg_payload["email"],
+        "password": "wrong-password",
+    }
+    login_resp = await client.post("/api/users/login", json=login_payload)
+
+    assert login_resp.status_code in (codes.UNAUTHORIZED,)

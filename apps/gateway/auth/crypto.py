@@ -7,8 +7,6 @@ def hash_value(password: str) -> bytes:
 
 def check_hashed_value(password: str, hash_password: bytes) -> bool:
     try:
-        bcrypt.checkpw(password.encode(), hash_password)
+        return bcrypt.checkpw(password.encode(), hash_password)
     except ValueError:
         return False
-    else:
-        return True
