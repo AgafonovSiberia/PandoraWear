@@ -29,4 +29,3 @@ async def upsert_pandora_credentials(
     config_service: FromDishka[ConfigService],
 ) -> PandoraCredDomain:
     return await config_service.save_pandora_cred(user_id=auth_user.id, pandora_cred_in=pandora_cred)
-
