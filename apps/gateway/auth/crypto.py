@@ -1,12 +1,12 @@
 import bcrypt
 
 
-def hash_value(password: str) -> bytes:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+def hash_value(value: str) -> bytes:
+    return bcrypt.hashpw(value.encode(), bcrypt.gensalt())
 
 
-def check_hashed_value(password: str, hash_password: bytes) -> bool:
+def check_hashed_value(value: str, hashed_value: bytes) -> bool:
     try:
-        return bcrypt.checkpw(password.encode(), hash_password)
+        return bcrypt.checkpw(value.encode(), hashed_value)
     except ValueError:
         return False

@@ -9,7 +9,7 @@ x-logging:
 
 services:
   gateway:
-    container_name: pandora-gateway
+    container_name: pandora_client-gateway
     labels:
       logging: "promtail"
       logging_jobname: "containerlogs"
@@ -85,7 +85,7 @@ services:
     ports:
       - "6666:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U agafonov -d pandora" ]
+      test: [ "CMD-SHELL", "pg_isready -U agafonov -d pandora_client" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -94,7 +94,7 @@ services:
       - log_app
 
   #  zookeeper:
-  #    container_name: pandora-zookeeper
+  #    container_name: pandora_client-zookeeper
   #    image: confluentinc/cp-zookeeper:7.6.0
   #    labels:
   #      logging: "promtail"
@@ -112,7 +112,7 @@ services:
   #    logging: *default-logging
   #
   #  kafka:
-  #    container_name: pandora-kafka
+  #    container_name: pandora_client-kafka
   #    image: confluentinc/cp-kafka:7.6.0
   #    labels:
   #      logging: "promtail"
@@ -132,7 +132,7 @@ services:
   #    logging: *default-logging
   #
   #  kafka-init:
-  #    container_name: pandora-kafka-init
+  #    container_name: pandora_client-kafka-init
   #    image: confluentinc/cp-kafka:7.6.0
   #    labels:
   #      logging: "promtail"
@@ -147,7 +147,7 @@ services:
   #    logging: *default-logging
   #
   #  kafdrop:
-  #    container_name: pandora-kafdrop
+  #    container_name: pandora_client-kafdrop
   #    image: obsidiandynamics/kafdrop
   #    labels:
   #      logging: "promtail"

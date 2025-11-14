@@ -11,12 +11,15 @@ dependencies = [
     "bcrypt>=5.0.0",
     "config-reader>=0.8",
     "dishka>=1.7.2",
-    "fastapi[standard]==0.120.4",
+    "fastapi-cli==0.0.16",
+    "fastapi[standard]==0.121.2",
     "myapplication>=0.1.0",
     "pydantic-settings>=2.11.0",
     "pyjwt>=2.10.1",
+    "pytest==9.0.1",
     "redis>=7.0.1",
     "sqlalchemy>=2.0.44",
+    "testcontainers==4.13.3",
     "tools==1.0.10",
 ]
 
@@ -85,9 +88,7 @@ dev = [
     "testcontainers[postgres,redis]>=4.13.2",
     "alembic>=1.17.1",
     "psycopg[binary]>=3.2",
-    "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
-    "testcontainers>=4.13.2",
     "pydevd-pycharm>=253.27864.50",
     "debugpy>=1.8.17",
 ]

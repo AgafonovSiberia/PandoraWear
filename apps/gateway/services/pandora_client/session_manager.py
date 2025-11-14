@@ -3,10 +3,10 @@ import asyncio
 from aiohttp import TCPConnector
 
 from apps.common.core.protocols.cache import ICache
-from apps.common.core.protocols.repository import IConfigRepo
+from apps.common.dao.config import PandoraCredDomain
 from apps.common.dao.device import AuthDevice
-from apps.gateway.services.pandora.client import PandoraClient
-from apps.gateway.services.pandora.session import PandoraSession
+from apps.gateway.services.pandora_client.client import PandoraClient
+from apps.gateway.services.pandora_client.session import PandoraSession
 
 MAX_SESSION = 4
 GARBAGE_COLLECT_INTERVAL = 60 * 60 * 2
@@ -49,19 +49,19 @@ class PandoraClientManager:
             await session.close()
         self._sessions.clear()
 
-    async def get_or_create_session(self, user_id: int, config_repo: IConfigRepo) -> PandoraSession:
+    async def get_or_create_session(self, user_id: int, pandora_cred: PandoraCredDomain) -> PandoraSession:
+
         session = self._sessions.get(user_id)
         if session:
             return session
-        return await self._create_session(user_id=user_id, config_repo=config_repo)
+        return await self._create_session(user_id=user_id, pandora_cred=pandora_cred)
 
-    async def _create_session(self, user_id: int, config_repo: IConfigRepo) -> PandoraSession:
-        cred = await config_repo.get_pandora_credentials(user_id=user_id)
-        session = PandoraSession(connector=self._connector, cred=cred)
+    async def _create_session(self, user_id: int, pandora_cred: PandoraCredDomain) -> PandoraSession:
+        session = PandoraSession(connector=self._connector, cred=pandora_cred)
         await session.login()
         self._sessions[user_id] = session
         return session
 
-    async def get_pandora_client(self, auth_device: AuthDevice, config_repo: IConfigRepo) -> PandoraClient:
-        session = await self.get_or_create_session(user_id=auth_device.user_id, config_repo=config_repo)
+    async def get_pandora_client(self, auth_device: AuthDevice, pandora_cred: PandoraCredDomain) -> PandoraClient:
+        session = await self.get_or_create_session(user_id=auth_device.user_id, pandora_cred=pandora_cred)
         return PandoraClient(session=session)

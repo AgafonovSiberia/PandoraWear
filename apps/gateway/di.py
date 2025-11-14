@@ -34,9 +34,9 @@ from apps.common.repository.user import UserRepo
 from apps.gateway.services.auth import AuthService
 from apps.gateway.services.config import ConfigService
 from apps.gateway.services.device import DeviceService
-from apps.gateway.services.engine import EngineService
-from apps.gateway.services.pandora.client import PandoraClient
-from apps.gateway.services.pandora.session_manager import PandoraClientManager
+from apps.gateway.services.pandora import PandoraService
+from apps.gateway.services.pandora_client.client import PandoraClient
+from apps.gateway.services.pandora_client.session_manager import PandoraClientManager
 from apps.gateway.services.user import UserService
 
 
@@ -137,13 +137,14 @@ class ServiceProvider(FastapiProvider):
         self,
         pandora_client_manager: PandoraClientManager,
         auth_device: AuthDevice,
-        config_repo: IConfigRepo,
+        config_service: ConfigService,
     ) -> PandoraClient:
-        return await pandora_client_manager.get_pandora_client(auth_device=auth_device, config_repo=config_repo)
+        pandora_cred = await config_service.get_pandora_cred(user_id=auth_device.user_id)
+        return await pandora_client_manager.get_pandora_client(auth_device=auth_device, pandora_cred=pandora_cred)
 
     @provide(scope=Scope.REQUEST)
-    async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient) -> EngineService:
-        return EngineService(user_repo=user_repo, pandora_client=pandora_client)
+    async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient) -> PandoraService:
+        return PandoraService(user_repo=user_repo, pandora_client=pandora_client)
 
 
 def create_container() -> AsyncContainer:

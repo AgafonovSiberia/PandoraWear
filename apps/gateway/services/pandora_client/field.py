@@ -7,7 +7,3 @@ class AuthResponseField(StrEnum):
     USER_ID = "user_id"
 
 
-class DeviceResponseField(StrEnum):
-    ID = "id"
-    NAME = "name"
-    PHONE = "phone"

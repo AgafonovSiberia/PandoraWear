@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from apps.gateway.api import get_api_router
 from apps.gateway.di import create_container
-from apps.gateway.services.pandora.session_manager import PandoraClientManager
+from apps.gateway.services.pandora_client.session_manager import PandoraClientManager
 
 if os.getenv("DEBUG_MODE") == "1":
     import pydevd

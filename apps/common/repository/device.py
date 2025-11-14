@@ -1,11 +1,11 @@
 import uuid
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.common.core.protocols.repository import IDeviceRepo
-from apps.common.dao.device import DeviceDomain, DeviceIn
+from apps.common.dao.device import DeviceDomain, DeviceIn, DeviceUpdate
 from apps.common.infrastructure.database.models import Device
 
 
@@ -38,6 +38,21 @@ class DeviceRepo(IDeviceRepo):
         await self._session.refresh(result)
 
         return DeviceDomain.model_validate(result)
+
+    async def update_device(self, device_update: DeviceUpdate) -> DeviceDomain:
+        stmt = (
+            update(Device)
+            .where(Device.id == device_update.id)
+            .values(**device_update.model_dump(exclude_unset=True))
+            .returning(Device)
+        )
+        result = await self._session.scalar(stmt)
+        await self._session.flush()
+        await self._session.refresh(result)
+
+        return DeviceDomain.model_validate(result)
+
+
 
     async def delete_device(self, device_id: uuid.UUID):
         device = await self._session.execute(select(Device).where(Device.id == device_id))

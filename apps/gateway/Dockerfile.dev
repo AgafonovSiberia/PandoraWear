@@ -11,7 +11,12 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml uv.lock alembic.ini ./
 
 # Синхронизируем зависимости с использованием uv
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen
+
+# Копируем код приложения
+COPY apps/common ./apps/common
+COPY apps/gateway ./apps/gateway
+COPY apps/__init__.py ./apps/
 
 # Устанавливаем переменные окружения
 ENV PYTHONUNBUFFERED=1

@@ -10,7 +10,7 @@ TTL_TOKEN = 60 * 24
 def generate_jwt(
     payload: Mapping[str, Any],
     secret: str,
-    issuer: Optional[str] = "pandora-api",
+    issuer: Optional[str] = "pandora_client-api",
     audience: Optional[str] = None,
     ttl: int = TTL_TOKEN,
 ) -> str:
@@ -32,7 +32,7 @@ def generate_jwt(
 def decode_jwt(
     token: str,
     secret: str,
-    issuer: str | None = "pandora-api",
+    issuer: str | None = "pandora_client-api",
     audience: str | None = None,
     leeway: int | float = 10,
 ) -> dict[str, Any]:

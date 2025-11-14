@@ -7,12 +7,12 @@ from fastapi import HTTPException, Request, status
 
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
-from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataOut
-from apps.gateway.auth.crypto import hash_value
+from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataOut, DeviceUpdate
+from apps.gateway.auth.crypto import check_hashed_value, hash_value
 
 TOKEN_LEN = 32
 TOKEN_TTL = timedelta(days=60)
-TOKEN_CACHE_TTL_SECONDS = 60 * 30
+TOKEN_CACHE_TTL_SECONDS = 60 * 60 * 2
 PAIR_CODE_TTL_SECONDS = 60
 
 
@@ -71,7 +71,9 @@ class DeviceService:
             last_rotated_at=datetime.now(UTC),
         )
         device = await self.device_repo.upsert_device(device_in)
-        await self.cache.set(key=self.device_key(device.id), value=str(token_hashed), ttl=TOKEN_CACHE_TTL_SECONDS)
+        await self.cache.set(
+            key=self.device_key(device.id), value=token_hashed.decode(encoding="utf-8"), ttl=TOKEN_CACHE_TTL_SECONDS
+        )
         return DevicePairDataOut(device_id=device.id, token=raw_token)
 
     async def device_revoke(self, device_id: uuid.UUID | str):
@@ -80,8 +82,15 @@ class DeviceService:
 
     async def process_token(self, device_id: uuid.UUID | str, token: str) -> DeviceDomain:
         from_cache = await self.cache.get(key=self.device_key(device_id))
-        if from_cache and from_cache == token:
-            return await self.device_repo.get(device_id=device_id)
+        if from_cache and check_hashed_value(value=token, hashed_value=from_cache.encode(encoding="utf-8")):
+            device = await self.device_repo.get(device_id=device_id)
+            device_update = DeviceUpdate(
+                id=device.id,
+                last_used_at=datetime.now(UTC),
+            )
+            updated_device = await self.device_repo.update_device(device_update=device_update)
+            return updated_device
+        
         device = await self.device_repo.get(device_id=device_id)
         if not device:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="TOKEN_EXPIRED")
@@ -91,8 +100,22 @@ class DeviceService:
 
         # Пока что просто продлеваем токен сами
         await self.cache.set(self.device_key(device.id), str(device.token_hash), ttl=TOKEN_CACHE_TTL_SECONDS)
-        return device
+        device_update = DeviceUpdate(
+            id=device.id,
+            last_rotated_at=datetime.now(UTC),
+            last_used_at=datetime.now(UTC),
+        )
+        updated_device = await self.device_repo.update_device(device_update=device_update)
+        return updated_device
 
     async def verify_request(self, request: Request) -> DeviceDomain:
-        device_id, token = request.cookies.get("device_id"), request.cookies.get("token")
-        return await self.process_token(device_id=device_id, token=token)
+        token = request.headers.get("Authorization")
+        if not token or not token.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing token")
+
+        cleaned_token = token.removeprefix("Bearer ").strip()
+        device_id = request.cookies.get("device_id")
+        if not device_id:
+            raise HTTPException(status_code=401, detail="Missing device_id")
+
+        return await self.process_token(device_id=device_id, token=cleaned_token)

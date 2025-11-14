@@ -32,10 +32,12 @@ class UserService:
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
 
-        if not check_hashed_value(password=user_in.password, hash_password=user.password_hash):
+        if not check_hashed_value(value=user_in.password, hashed_value=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
 
-        token = generate_jwt(payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY, ttl=self.auth_settings.JWT_TTL)
+        token = generate_jwt(
+            payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY, ttl=self.auth_settings.JWT_TTL
+        )
         await self.cache.set_json(key=str(token), data={"user_id": user.id}, ttl=self.auth_settings.JWT_TTL)
         return token
 
@@ -45,7 +47,6 @@ class UserService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
 
         await self.cache.delete(token)
-
 
     async def set_pandora_credentials(self, user_id: int, login: str, password: str) -> None: ...
 
