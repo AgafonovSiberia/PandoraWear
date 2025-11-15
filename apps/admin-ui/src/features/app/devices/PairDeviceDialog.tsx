@@ -42,7 +42,7 @@ export default function PairDeviceDialog({ open, onClose, onPaired }: Props) {
     try {
       setSubmitting(true);
       setError(null);
-      const res = await api.post<{ pair_code: string }>('/devices/pairing', { name: name.trim() });
+      const res = await api.post<{ pair_code: string }>('/devices/pairing/code', { name: name.trim() });
       setCode(res.data.pair_code);
       onPaired?.({ code: res.data.pair_code, name: name.trim() });
     } catch (e: any) {

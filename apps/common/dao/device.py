@@ -45,7 +45,7 @@ class DevicePairDataIn(BaseModel):
     code: str
 
 class DevicePairDataOut(BaseModel):
-    device_id: uuid.UUID
+    device_id: str | uuid.UUID
     token: str
 
 class DeviceRevoke(BaseModel):

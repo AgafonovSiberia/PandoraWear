@@ -8,6 +8,7 @@ from fastapi import HTTPException, Request, status
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
 from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataOut, DeviceUpdate
+from apps.common.dao.user import UserInLogin
 from apps.gateway.auth.crypto import check_hashed_value, hash_value
 
 TOKEN_LEN = 32
@@ -54,15 +55,19 @@ class DeviceService:
         await self.cache.set_json(key=self.pair_code_key(code=code), data=data, ttl=PAIR_CODE_TTL_SECONDS)
         return code
 
-    async def pair(self, pair_code: str) -> DevicePairDataOut:
-        data = await self.cache.get_json(key=self.pair_code_key(code=pair_code))
-        if not data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="INVALID_CODE")
+    async def pair_by_cred(self, user_in: UserInLogin, device_name: str ):
+        user = await self.user_repo.get_by_email(email=user_in.email)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
 
+        if not check_hashed_value(value=user_in.password, hashed_value=user.password_hash):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
+
+        return await self._pair_device(device_name=device_name, user_id=user.id)
+
+    async def _pair_device(self, device_name: str, user_id: int) -> DevicePairDataOut:
         raw_token = self._generate_token()
         token_hashed = hash_value(raw_token)
-        user_id, device_name = data.get("user_id"), data.get("device_name")
-
         device_in = DeviceIn(
             name=device_name,
             token_hash=token_hashed,
@@ -74,7 +79,15 @@ class DeviceService:
         await self.cache.set(
             key=self.device_key(device.id), value=token_hashed.decode(encoding="utf-8"), ttl=TOKEN_CACHE_TTL_SECONDS
         )
-        return DevicePairDataOut(device_id=device.id, token=raw_token)
+        return DevicePairDataOut(device_id=str(device.id), token=raw_token)
+
+    async def pair_by_code(self, pair_code: str) -> DevicePairDataOut:
+        data = await self.cache.get_json(key=self.pair_code_key(code=pair_code))
+        if not data:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="INVALID_CODE")
+
+        user_id, device_name = data.get("user_id"), data.get("device_name")
+        return await self._pair_device(device_name=device_name, user_id=user_id)
 
     async def device_revoke(self, device_id: uuid.UUID | str):
         await self.cache.delete(key=str(device_id))

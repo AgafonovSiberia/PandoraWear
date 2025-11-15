@@ -27,13 +27,18 @@ class UserService:
         user = await self.user_repo.create(user_in=new_user)
         return user
 
-    async def login(self, user_in: UserInLogin) -> str:
+    async def _check_user(self, user_in: UserInLogin) -> UserDomain | None:
         user = await self.user_repo.get_by_email(email=user_in.email)
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
 
         if not check_hashed_value(value=user_in.password, hashed_value=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
+
+        return user
+
+    async def login(self, user_in: UserInLogin) -> str:
+        user = await self._check_user(user_in=user_in)
 
         token = generate_jwt(
             payload={"user_id": user.id}, secret=self.auth_settings.SECRET_KEY, ttl=self.auth_settings.JWT_TTL

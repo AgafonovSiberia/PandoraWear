@@ -1,11 +1,11 @@
 import uuid
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from apps.common.dao.device import DeviceDomain, DevicePairDataOut, DeviceRegData
-from apps.common.dao.user import AuthUser
+from apps.common.dao.user import AuthUser, UserInLogin
 from apps.gateway.services.device import DeviceService
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/devices")
@@ -27,9 +27,18 @@ async def pair(
     return JSONResponse(status_code=status.HTTP_200_OK, content={"pair_code": code})
 
 
-@router.post("/pairing/{code}", include_in_schema=True, description="Сопряжение устройства по коду")
+@router.post("/pairing/code/{code}", include_in_schema=True, description="Сопряжение устройства по коду")
 async def pair_confirm(code: str, device_service: FromDishka[DeviceService]) -> DevicePairDataOut:
-    paired_device_data = await device_service.pair(pair_code=code)
+    paired_device_data = await device_service.pair_by_code(pair_code=code)
+    return paired_device_data
+
+
+@router.post("/pairing/cred", include_in_schema=True, description="Сопряжение устройства по данным авторизации")
+async def pair_confirm_by_cred(
+    user_in: UserInLogin, request: Request, device_service: FromDishka[DeviceService]
+) -> DevicePairDataOut:
+    device_name = request.headers.get("X-Device-Name") or "UnknownDevice"
+    paired_device_data = await device_service.pair_by_cred(user_in=user_in, device_name=device_name)
     return paired_device_data
 
 
