@@ -87,7 +87,7 @@ export const AppTopBar = () => {
               variant="h6"
               sx={{ fontWeight: 600, letterSpacing: 0.2 }}
             >
-              PandoraWear
+              Pandora Custom API Server
             </Typography>
           </Box>
 
