@@ -11,16 +11,7 @@ router = APIRouter(route_class=DishkaRoute, prefix="/api/users")
 @router.post("/login", include_in_schema=True)
 async def login(user_in: UserInLogin, user_service: FromDishka[UserService]) -> JSONResponse:
     token = await user_service.login(user_in=user_in)
-    response = JSONResponse(status_code=200, content={})
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        max_age=60 * 60 * 24,
-        path="/",
-    )
+    response = JSONResponse(status_code=200, content={"access_token": token, "token_type": "bearer"})
     return response
 
 

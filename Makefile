@@ -1,18 +1,23 @@
 build:
-	docker compose -f docker-compose.yaml up -d --build
+	docker compose -f docker-compose.yaml up -d --build $(app)
+
+log:
+	docker compose -f docker-compose.yaml logs -f $(app)
+
+down:
+	docker compose -f docker-compose.yaml down $(app)
+
 
 build-debug:
-	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up -d --build
+	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up -d --build $(app)
 
 
 down-debug:
-	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml down
+	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml down $(app)
 
-down:
-	docker compose -f docker-compose.yaml down
 
 log-debug:
-	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml logs -f
+	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml logs -f $(app)
 
 .PHONY: migration-create
 migration-create:

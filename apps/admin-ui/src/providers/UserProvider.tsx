@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useRef, useEffect, useState } from 'react';
-import { api } from '../api/axios';
+import { api } from '@/api/axios';
 
 export type CurrentUser = {
   username: string;
@@ -25,7 +25,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const load = async () => {
     setLoading(true);
     try {
-      const r = await api.get('/users/me'); // cookie уедет автоматически
+      const r = await api.get('/users/me');
       setUser(r.data);
     } catch {
       setUser(null);
@@ -35,7 +35,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (didInit.current) return;        // ← второй вызов игнорим
+    if (didInit.current) return;
     didInit.current = true;
     void load();
   }, []);

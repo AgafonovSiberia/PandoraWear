@@ -15,15 +15,20 @@ class AuthService:
         self.settings = auth_settings
 
     async def verify_request(self, request: Request) -> tuple[str, UserDomain]:
-        token = request.cookies.get("access_token")
-        if not token:
+        
+        token = request.headers.get("Authorization")
+        if not token or not token.startswith("Bearer "):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="MISSING_TOKEN")
+
+        cleaned_token = token.removeprefix("Bearer ").strip()
+        if not cleaned_token:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="NO_TOKEN")
 
-        if not await self.cache.get(token):
+        if not await self.cache.get(cleaned_token):
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="TOKEN_EXPIRED")
 
         try:
-            payload = decode_jwt(token=token, secret=self.settings.SECRET_KEY)
+            payload = decode_jwt(token=cleaned_token, secret=self.settings.SECRET_KEY)
         except jwt.ExpiredSignatureError:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="TOKEN_EXPIRED")
         except jwt.InvalidTokenError:

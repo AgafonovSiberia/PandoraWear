@@ -15,8 +15,8 @@ import {useForm} from 'react-hook-form';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-import {api} from '../../api/axios';
-import {extractApiError} from '../../api/errors';
+import {api} from '@/api/axios.ts';
+import {extractApiError} from '@/api/errors.ts';
 import React, {useEffect, useState} from 'react';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 
@@ -57,10 +57,14 @@ export default function LoginCard() {
         setRegisterSuccess(false);
     };
     const navigate = useNavigate();
+
     const onSubmit = async (data: LoginForm) => {
         try {
             setServerError(null);
             const res = await api.post('/users/login', data);
+            const token = res.data.access_token
+            localStorage.setItem('token', token);
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             console.log('Авторизация успешна:', res.data);
             navigate('/')
         } catch (e: any) {

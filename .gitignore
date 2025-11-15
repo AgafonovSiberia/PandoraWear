@@ -242,3 +242,4 @@ cython_debug/
 #.idea/
 
 !/apps/common/infrastructure/database/migrations/
+
