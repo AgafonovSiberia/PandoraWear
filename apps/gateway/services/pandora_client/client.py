@@ -11,6 +11,10 @@ class PandoraClient:
         response = await self._session.request(method="GET", path=URL.devices)
         return await response.json()
 
+    async def get_updates(self) -> dict:
+        response = await self._session.request(method="GET", path=URL.update, params={"ts": -1})
+        return await response.json()
+
     async def run_command(
         self,
         pandora_command: PandoraCommand,

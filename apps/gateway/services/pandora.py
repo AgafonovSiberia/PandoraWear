@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 
 from apps.common.const import AlarmAction
 from apps.common.core.protocols.repository import IUserRepo
-from apps.common.dao.pandora import PandoraActionResponse, PandoraDevice
+from apps.common.dao.pandora import PandoraActionResponse, PandoraDevice, PandoraDeviceData, PandoraDeviceDomain
 from apps.gateway.services.pandora_client.client import PandoraClient
 from apps.gateway.services.pandora_client.command import PandoraCommand
 
@@ -20,9 +20,24 @@ class PandoraService:
         self._pandora = pandora_client
         self._user_repo = user_repo
 
-    async def get_devices(self) -> list[PandoraDevice]:
+    async def get_devices(self) -> list[PandoraDeviceDomain]:
         devices = await self._pandora.get_all_devices()
-        return [PandoraDevice.model_validate(device) for device in devices]
+        updates = await self._pandora.get_updates()
+        domain_devices = []
+        for device in [PandoraDevice.model_validate(device) for device in devices]:
+            data = updates.get("stats", {}).get(str(device.id), None)
+            if not data:
+                continue
+            device_domain = PandoraDeviceDomain(
+                id=device.id,
+                name=device.name,
+                model=device.model,
+                data=PandoraDeviceData.model_validate(data)
+            )
+            domain_devices.append(device_domain)
+        return domain_devices
+
+
 
     async def execute_command(self, alarm_device_id: int, action: AlarmAction) -> PandoraActionResponse:
         pandora_command = resolve_pandora_action(action)

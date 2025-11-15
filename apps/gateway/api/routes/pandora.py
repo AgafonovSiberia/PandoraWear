@@ -2,7 +2,7 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter
 
-from apps.common.dao.pandora import AlarmActionIn, PandoraActionResponse, PandoraDevice
+from apps.common.dao.pandora import AlarmActionIn, PandoraActionResponse, PandoraDeviceDomain
 from apps.gateway.services.pandora import PandoraService
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/alarm")
@@ -18,5 +18,5 @@ async def engine_command(
 @router.get("/devices", summary="Получить список доступных устройств")
 async def get_devices(
     pandora_service: FromDishka[PandoraService] = None,
-) -> list[PandoraDevice]:
+) -> list[PandoraDeviceDomain]:
     return await pandora_service.get_devices()

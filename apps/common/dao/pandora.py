@@ -67,6 +67,23 @@ class PandoraDevice(BaseModel):
     type: str
     voice_version: str
 
+class PandoraDeviceData(BaseModel):
+    fuel_tank: int
+    voltage: float
+    engine_temp: int
+    out_temp: int
+    cabine_temp: int
+    engine_rpm: int
+
+    x: float
+    y: float
+
+
+class PandoraDeviceDomain(BaseModel):
+    id: int
+    name: str
+    model: str
+    data: PandoraDeviceData
 
 class PandoraActionResponse(BaseModel):
     action_result: dict
