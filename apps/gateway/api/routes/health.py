@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 router = APIRouter(route_class=DishkaRoute, prefix="/api", tags=["health"])
 
 
-@router.get("/")
+@router.get("")
 async def root():
     return {"message": "Pandora Wear"}
 

@@ -11,7 +11,7 @@ from apps.gateway.services.device import DeviceService
 router = APIRouter(route_class=DishkaRoute, prefix="/api/devices")
 
 
-@router.get("/", include_in_schema=True, description="Получить список всех устройств")
+@router.get("", include_in_schema=True, description="Получить список всех устройств")
 async def get_all_devices(
     auth_user: FromDishka[AuthUser], device_service: FromDishka[DeviceService]
 ) -> list[DeviceDomain]:
