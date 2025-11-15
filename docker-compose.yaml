@@ -10,9 +10,6 @@ x-logging:
 services:
   gateway:
     container_name: pandora_gateway
-    labels:
-      logging: "promtail"
-      logging_jobname: "containerlogs"
     env_file:
       .env
     ports:
@@ -31,12 +28,18 @@ services:
       - .:/apps
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
-  admin:
-    container_name: pandora_admin
     labels:
       logging: "promtail"
       logging_jobname: "containerlogs"
+      traefik.enable: "true"
+      traefik.http.routers.gateway.rule: "PathPrefix(`/api`)"
+      traefik.http.routers.gateway.entrypoints: "websecure"
+      traefik.http.routers.gateway.tls: "true"
+      traefik.http.routers.gateway.tls.certresolver: "letsencrypt"
+      traefik.http.services.gateway.loadbalancer.server.port: "8000"
+
+  admin:
+    container_name: pandora_admin
     build:
       context: ./apps/admin-ui
       dockerfile: Dockerfile
@@ -46,6 +49,15 @@ services:
     networks:
       - pandora-network
     logging: *default-logging
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+      traefik.enable: "true"
+      traefik.http.routers.admin.rule: "PathPrefix(`/`)"
+      traefik.http.routers.admin.entrypoints: "websecure"
+      traefik.http.routers.admin.tls: "true"
+      traefik.http.routers.admin.tls.certresolver: "letsencrypt"
+      traefik.http.services.admin.loadbalancer.server.port: "80"
 
   redis:
     container_name: pandora_redis
@@ -111,6 +123,38 @@ services:
     networks:
       - pandora-network
 
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    env_file:
+      - .env
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+
+      - --api.dashboard=true
+      - --api.insecure=true
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - pandora-network
+    restart: always
 
 
 volumes:
@@ -119,6 +163,7 @@ volumes:
   redis_data:
   zookeeper_data:
   zookeeper_log:
+  traefik_letsencrypt:
 
 networks:
   pandora-network:
