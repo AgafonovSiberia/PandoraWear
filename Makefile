@@ -9,7 +9,7 @@ down:
 
 
 build-debug:
-	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up -d --build $(app)
+	docker compose --env-file ./debug.env -f docker-compose.yaml -f docker-compose.debug.yaml up -d --build $(app)
 
 
 down-debug:

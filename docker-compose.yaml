@@ -12,8 +12,6 @@ services:
     container_name: pandora_gateway
     env_file:
       .env
-    ports:
-      - "8000:8000"
     build:
       context: .
       dockerfile: apps/gateway/Dockerfile
@@ -43,12 +41,12 @@ services:
     build:
       context: ./apps/admin-ui
       dockerfile: Dockerfile
-    ports:
-      - "3000:80"   # http://server:3000 -> nginx внутри admin-контейнера
     restart: on-failure
     networks:
       - pandora-network
     logging: *default-logging
+    env_file:
+      .env
     labels:
       logging: "promtail"
       logging_jobname: "containerlogs"
@@ -115,7 +113,7 @@ services:
     ports:
       - "6666:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U agafonov -d pandora" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 10

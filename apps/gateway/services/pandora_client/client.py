@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from apps.gateway.services.pandora_client.command import PandoraCommand
 from apps.gateway.services.pandora_client.session import PandoraSession
 from apps.gateway.services.pandora_client.url import URL
@@ -12,13 +14,14 @@ class PandoraClient:
         return await response.json()
 
     async def get_updates(self) -> dict:
+        ts = int(datetime.now().timestamp())
         response = await self._session.request(method="GET", path=URL.update, params={"ts": -1})
         return await response.json()
 
     async def run_command(
         self,
         pandora_command: PandoraCommand,
-        device_id: int = None,
+        device_id: int,
     ) -> dict:
         response = await self._session.request(
             method="POST", path=URL.command, data={"id": device_id, "command": pandora_command.value}

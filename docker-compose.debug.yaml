@@ -1,41 +1,15 @@
-x-logging:
-  &default-logging
-  driver: "json-file"
-  options:
-    max-size: "1m"
-    max-file: "1"
-    tag: "{{.Name}}"
-
-
 services:
   gateway:
-    container_name: pandora_client-gateway
-    labels:
-      logging: "promtail"
-      logging_jobname: "containerlogs"
     env_file:
-      .env
+      debug.env
     environment:
       DEBUG_MODE: 1
-    ports:
-      - "8000:8000"
     build:
       context: .
-      dockerfile: apps/gateway/Dockerfile.dev
-    restart: on-failure
-    networks:
-      - log_app
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-    logging: *default-logging
+      dockerfile: apps/gateway/Dockerfile.debug
     volumes:
-        - ./apps:/app/apps
-        - /app/__pycache__
-        - /app/.venv
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    command: >
+      - .:/apps
+    command: !override >
       uvicorn apps.gateway.main:app
       --host 0.0.0.0
       --port 8000
@@ -43,8 +17,44 @@ services:
       --reload-dir /app
       --reload-include *.py
       --reload-exclude "alembic/versions/*,__pycache__/*,.git/*"
+    labels:  !override
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+      traefik.enable: "true"
+      traefik.http.routers.gateway.rule: "PathPrefix(`/api`)"
+      traefik.http.routers.gateway.entrypoints: "web"
+      traefik.http.services.gateway.loadbalancer.server.port: "8000"
 
-networks:
-  log_app:
-    external: true
-    name: app
+
+  admin:
+    env_file:
+      - debug.env
+    labels :  !override
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+      traefik.enable: "true"
+      traefik.http.routers.admin.rule: "PathPrefix(`/`)"
+      traefik.http.routers.admin.entrypoints: "web"
+      traefik.http.services.admin.loadbalancer.server.port: "80"
+
+  traefik:
+    env_file:
+      - debug.env
+    command: !override
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --api.dashboard=true
+      - --api.insecure=true
+    ports:  !override
+      - "80:80"
+      - "8080:8080"
+
+  postgres:
+    env_file:
+      - debug.env
+
+  migrations:
+    env_file:
+      - debug.env
+
