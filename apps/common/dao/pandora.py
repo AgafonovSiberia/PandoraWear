@@ -2,6 +2,8 @@ from typing import Any, List
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from apps.common.const import AlarmAction
+
 
 class Features(BaseModel):
     active_security: int
@@ -91,10 +93,10 @@ class PandoraActionResponse(BaseModel):
 
 class _AlarmAction(BaseModel):
     alarm_device_id: int
-    action: str
+    action: AlarmAction
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class AlarmActionIn(_AlarmAction):
-    action: str
+    action: AlarmAction
