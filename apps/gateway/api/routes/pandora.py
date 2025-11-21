@@ -16,7 +16,7 @@ async def engine_command(
     pandora_response = await pandora_service.execute_command(
         alarm_device_id=action.alarm_device_id, action=action.action
     )
-    return JSONResponse(status_code=status.HTTP_200_OK, content=pandora_response)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=pandora_response.model_dump())
 
 
 @router.get("/devices", summary="Получить список доступных устройств")

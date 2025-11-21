@@ -37,7 +37,7 @@ async def pair_confirm(code: str, device_service: FromDishka[DeviceService]) -> 
 async def pair_confirm_by_cred(
     user_in: UserInLogin, request: Request, device_service: FromDishka[DeviceService]
 ) -> DevicePairDataOut:
-    device_name = request.headers.get("X-Device-Name") or "UnknownDevice"
+    device_name = str(uuid.uuid4())
     paired_device_data = await device_service.pair_by_cred(user_in=user_in, device_name=device_name)
     return paired_device_data
 
