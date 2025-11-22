@@ -23,6 +23,9 @@ class UserInLogin(BaseModel):
     password: str
 
 
+class ConfirmDeviceIn(UserInLogin):
+    device_name: str
+
 class UserInRegister(BaseModel):
     username: str = None
     email: str

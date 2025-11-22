@@ -5,7 +5,7 @@ from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from apps.common.dao.device import DeviceDomain, DevicePairDataOut, DeviceRegData
-from apps.common.dao.user import AuthUser, UserInLogin
+from apps.common.dao.user import AuthUser, ConfirmDeviceIn
 from apps.gateway.services.device import DeviceService
 
 router = APIRouter(route_class=DishkaRoute, prefix="/api/devices")
@@ -35,10 +35,9 @@ async def pair_confirm(code: str, device_service: FromDishka[DeviceService]) -> 
 
 @router.post("/pairing/cred", include_in_schema=True, description="Сопряжение устройства по данным авторизации")
 async def pair_confirm_by_cred(
-    user_in: UserInLogin, request: Request, device_service: FromDishka[DeviceService]
+    confirm_in: ConfirmDeviceIn, request: Request, device_service: FromDishka[DeviceService]
 ) -> DevicePairDataOut:
-    device_name = str(uuid.uuid4())
-    paired_device_data = await device_service.pair_by_cred(user_in=user_in, device_name=device_name)
+    paired_device_data = await device_service.pair_by_cred(confirm_in=confirm_in)
     return paired_device_data
 
 

@@ -8,7 +8,7 @@ from fastapi import HTTPException, Request, status
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IDeviceRepo, IUserRepo
 from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataOut, DeviceUpdate
-from apps.common.dao.user import UserInLogin
+from apps.common.dao.user import ConfirmDeviceIn
 from apps.gateway.auth.crypto import check_hashed_value, hash_value
 
 TOKEN_LEN = 32
@@ -55,15 +55,18 @@ class DeviceService:
         await self.cache.set_json(key=self.pair_code_key(code=code), data=data, ttl=PAIR_CODE_TTL_SECONDS)
         return code
 
-    async def pair_by_cred(self, user_in: UserInLogin, device_name: str ):
-        user = await self.user_repo.get_by_email(email=user_in.email)
+    async def pair_by_cred(self, confirm_in: ConfirmDeviceIn):
+        if not confirm_in.device_name:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="UNDEFINED_DEVICE_NAME")
+
+        user = await self.user_repo.get_by_email(email=confirm_in.email)
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="USER_NOT_FOUND")
 
-        if not check_hashed_value(value=user_in.password, hashed_value=user.password_hash):
+        if not check_hashed_value(value=confirm_in.password, hashed_value=user.password_hash):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="INVALID_CREDENTIALS")
 
-        return await self._pair_device(device_name=device_name, user_id=user.id)
+        return await self._pair_device(device_name=confirm_in.device_name, user_id=user.id)
 
     async def _pair_device(self, device_name: str, user_id: int) -> DevicePairDataOut:
         raw_token = self._generate_token()
