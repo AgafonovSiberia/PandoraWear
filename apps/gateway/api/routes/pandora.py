@@ -3,6 +3,7 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
 from starlette.responses import JSONResponse
 
+from apps.common.dao.device import AuthDevice
 from apps.common.dao.pandora import AlarmActionIn, PandoraDeviceDomain
 from apps.gateway.services.pandora import PandoraService
 
@@ -21,6 +22,7 @@ async def engine_command(
 
 @router.get("/devices", summary="Получить список доступных устройств")
 async def get_devices(
+    auth_device: FromDishka[AuthDevice],
     pandora_service: FromDishka[PandoraService],
 ) -> list[PandoraDeviceDomain]:
     return await pandora_service.get_devices()

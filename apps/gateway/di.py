@@ -117,7 +117,6 @@ class ServiceProvider(FastapiProvider):
     @provide(scope=Scope.REQUEST)
     async def auth_device_guard(self, request: Request, device_service: DeviceService) -> AuthDevice:
         device = await device_service.verify_request(request)
-
         return AuthDevice(id=device.id, user_id=device.user_id, name=device.name)
 
     @provide(scope=Scope.REQUEST)
