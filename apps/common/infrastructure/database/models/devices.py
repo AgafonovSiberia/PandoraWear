@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql.schema import ForeignKey, UniqueConstraint
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import UUID, DateTime, LargeBinary, String
 
 from apps.common.infrastructure.database.models.base import Base
@@ -38,8 +38,6 @@ class Device(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="devices", lazy="joined")
-
-    __table_args__ = (UniqueConstraint("name", name="uq_devices_name"),)
 
     def mark_used(self) -> None:
         """Обновить last_used_at."""

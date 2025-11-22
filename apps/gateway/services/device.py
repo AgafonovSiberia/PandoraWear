@@ -100,12 +100,13 @@ class DeviceService:
         from_cache = await self.cache.get(key=self.device_key(device_id))
         if from_cache and check_hashed_value(value=token, hashed_value=from_cache.encode(encoding="utf-8")):
             device = await self.device_repo.get(device_id=device_id)
-            device_update = DeviceUpdate(
-                id=device.id,
-                last_used_at=datetime.now(UTC),
-            )
-            updated_device = await self.device_repo.update_device(device_update=device_update)
-            return updated_device
+            if device:
+                device_update = DeviceUpdate(
+                    id=device.id,
+                    last_used_at=datetime.now(UTC),
+                )
+                updated_device = await self.device_repo.update_device(device_update=device_update)
+                return updated_device
         
         device = await self.device_repo.get(device_id=device_id)
         if not device:

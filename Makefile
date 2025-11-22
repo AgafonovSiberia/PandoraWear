@@ -19,6 +19,7 @@ down-debug:
 log-debug:
 	docker compose -f docker-compose.yaml -f docker-compose.debug.yaml logs -f $(app)
 
+
 .PHONY: migration-create
 migration-create:
 	docker-compose run --rm migrations uv run alembic -c alembic.ini revision --autogenerate -m "$(msg)"
