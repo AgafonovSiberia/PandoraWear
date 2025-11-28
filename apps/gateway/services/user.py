@@ -55,5 +55,8 @@ class UserService:
 
     async def set_pandora_credentials(self, user_id: int, login: str, password: str) -> None: ...
 
-    async def get_user(self, email: str) -> UserDomain | None:
+    async def get_user_by_email(self, email: str) -> UserDomain | None:
         return await self.user_repo.get_by_email(email=email)
+
+    async def get_user(self, user_id: int) -> UserDomain | None:
+        return await self.user_repo.get(user_id=user_id)

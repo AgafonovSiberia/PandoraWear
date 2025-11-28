@@ -10,8 +10,14 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AuthUser(User):
+# class AuthUser(User):
+#     token: str
+
+
+class AuthUser(BaseModel):
+    id: int
     token: str
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserDomain(User):
@@ -25,6 +31,7 @@ class UserInLogin(BaseModel):
 
 class ConfirmDeviceIn(UserInLogin):
     device_name: str
+
 
 class UserInRegister(BaseModel):
     username: str = None

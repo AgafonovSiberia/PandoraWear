@@ -4,7 +4,7 @@ from apps.common.const import AlarmAction
 from apps.common.core.protocols.repository import IUserRepo
 from apps.common.dao.pandora import PandoraActionResponse, PandoraDevice, PandoraDeviceData, PandoraDeviceDomain
 from apps.gateway.services.pandora_client.client import PandoraClient
-from apps.gateway.services.pandora_client.command import PandoraCommand
+from apps.gateway.services.pandora_client.const import PandoraCommand
 
 
 def resolve_pandora_action(action: AlarmAction) -> PandoraCommand | None:

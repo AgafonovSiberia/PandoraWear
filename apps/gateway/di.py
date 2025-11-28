@@ -35,8 +35,7 @@ from apps.gateway.services.auth import AuthService
 from apps.gateway.services.config import ConfigService
 from apps.gateway.services.device import DeviceService
 from apps.gateway.services.pandora import PandoraService
-from apps.gateway.services.pandora_client.client import PandoraClient
-from apps.gateway.services.pandora_client.session_manager import PandoraClientManager
+from apps.gateway.services.pandora_client.client import PandoraClient, resolve_pandora_client
 from apps.gateway.services.user import UserService
 
 
@@ -111,8 +110,8 @@ class ServiceProvider(FastapiProvider):
 
     @provide(scope=Scope.REQUEST)
     async def auth_user_guard(self, request: Request, auth_service: AuthService) -> AuthUser:
-        token, user = await auth_service.verify_request(request)
-        return AuthUser(id=user.id, username=user.username, email=user.email, active=user.active, token=token)
+        token, user_id = await auth_service.verify_request(request)
+        return AuthUser(id=user_id, token=token)
 
     @provide(scope=Scope.REQUEST)
     async def auth_device_guard(self, request: Request, device_service: DeviceService) -> AuthDevice:
@@ -124,22 +123,18 @@ class ServiceProvider(FastapiProvider):
         return DeviceService(user_repo=user_repo, device_repo=device_repo, cache=cache)
 
     @provide(scope=Scope.REQUEST)
-    async def config_service(self, user_repo: IUserRepo, config_repo: IConfigRepo) -> ConfigService:
-        return ConfigService(user_repo=user_repo, config_repo=config_repo)
-
-    @provide(scope=Scope.APP)
-    async def pandora_manager(self, cache: ICache, tcp_connector: TCPConnector) -> PandoraClientManager:
-        return PandoraClientManager(connector=tcp_connector, cache=cache)
+    async def config_service(self, user_repo: IUserRepo, config_repo: IConfigRepo, cache: ICache) -> ConfigService:
+        return ConfigService(user_repo=user_repo, config_repo=config_repo, cache=cache)
 
     @provide(scope=Scope.REQUEST)
     async def pandora_client(
         self,
-        pandora_client_manager: PandoraClientManager,
         auth_device: AuthDevice,
         config_service: ConfigService,
+        cache: ICache,
     ) -> PandoraClient:
         pandora_cred = await config_service.get_pandora_cred(user_id=auth_device.user_id)
-        return await pandora_client_manager.get_pandora_client(auth_device=auth_device, pandora_cred=pandora_cred)
+        return await resolve_pandora_client(user_id=auth_device.user_id, pandora_cred=pandora_cred, cache=cache)
 
     @provide(scope=Scope.REQUEST)
     async def engine_service(self, user_repo: IUserRepo, pandora_client: PandoraClient) -> PandoraService:

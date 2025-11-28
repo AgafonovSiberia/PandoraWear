@@ -1,7 +1,7 @@
 import uuid
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import JSONResponse
 
 from apps.common.dao.device import DeviceDomain, DevicePairDataOut, DeviceRegData
@@ -47,6 +47,6 @@ async def pair_confirm_by_cred(
     include_in_schema=True,
     description="Отозвать сопряжение с устройством",
 )
-async def revoke(device_id: uuid.UUID | str, device_service: FromDishka[DeviceService]) -> JSONResponse:
+async def revoke(device_id: uuid.UUID, device_service: FromDishka[DeviceService]) -> Response:
     await device_service.device_revoke(device_id=device_id)
-    return JSONResponse(status_code=status.HTTP_200_OK, content={})
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

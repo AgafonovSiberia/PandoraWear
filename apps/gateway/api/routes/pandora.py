@@ -22,7 +22,7 @@ async def engine_command(
 
 @router.get("/devices", summary="Получить список доступных устройств")
 async def get_devices(
-    auth_device: FromDishka[AuthDevice],
+    _: FromDishka[AuthDevice],
     pandora_service: FromDishka[PandoraService],
 ) -> list[PandoraDeviceDomain]:
     return await pandora_service.get_devices()

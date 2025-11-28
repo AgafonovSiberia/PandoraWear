@@ -4,7 +4,6 @@ from fastapi import HTTPException, Request, status
 from apps.common.config import SecureSettings
 from apps.common.core.protocols.cache import ICache
 from apps.common.core.protocols.repository import IUserRepo
-from apps.common.dao.user import UserDomain
 from apps.gateway.auth.token import decode_jwt
 
 
@@ -14,8 +13,7 @@ class AuthService:
         self.cache = cache
         self.settings = auth_settings
 
-    async def verify_request(self, request: Request) -> tuple[str, UserDomain]:
-        
+    async def verify_request(self, request: Request) -> tuple[str, int]:
         token = request.headers.get("Authorization")
         if not token or not token.startswith("Bearer "):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="MISSING_TOKEN")
@@ -38,8 +36,8 @@ class AuthService:
         if not iss:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="INVALID_PAYLOAD")
 
-        user = await self.user_repo.get(user_id=payload.get("user_id"))
-        if not user:
-            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="USER_NOT_FOUND")
+        user_id = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="INVALID_PAYLOAD")
 
-        return token, user
+        return token, user_id

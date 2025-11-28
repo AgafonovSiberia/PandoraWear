@@ -1,8 +1,8 @@
-from datetime import datetime
 
-from apps.gateway.services.pandora_client.command import PandoraCommand
+from apps.common.core.protocols.cache import ICache
+from apps.common.dao.config import PandoraCredDomain
+from apps.gateway.services.pandora_client.const import URL, PandoraCommand
 from apps.gateway.services.pandora_client.session import PandoraSession
-from apps.gateway.services.pandora_client.url import URL
 
 
 class PandoraClient:
@@ -10,12 +10,11 @@ class PandoraClient:
         self._session = session
 
     async def get_all_devices(self) -> dict:
-        response = await self._session.request(method="GET", path=URL.devices)
+        response = await self._session.request_json(method="GET", path=URL.devices)
         return await response.json()
 
     async def get_updates(self) -> dict:
-        ts = int(datetime.now().timestamp())
-        response = await self._session.request(method="GET", path=URL.update, params={"ts": -1})
+        response = await self._session.request_json(method="GET", path=URL.update, params={"ts": -1})
         return await response.json()
 
     async def run_command(
@@ -23,7 +22,12 @@ class PandoraClient:
         pandora_command: PandoraCommand,
         device_id: int,
     ) -> dict:
-        response = await self._session.request(
+        response = await self._session.request_json(
             method="POST", path=URL.command, data={"id": device_id, "command": pandora_command.value}
         )
         return await response.json()
+
+
+async def resolve_pandora_client(user_id: int, pandora_cred: PandoraCredDomain, cache: ICache) -> PandoraClient:
+    session = PandoraSession(cred=pandora_cred, user_id=user_id, cache=cache)
+    return PandoraClient(session=session)

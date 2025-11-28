@@ -1,13 +1,13 @@
 import os
 from contextlib import asynccontextmanager
 
+from apps.gateway.services.pandora_client.session_manager import PandoraClientManager
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from apps.gateway.api import get_api_router
 from apps.gateway.di import create_container
-from apps.gateway.services.pandora_client.session_manager import PandoraClientManager
 
 if os.getenv("DEBUG_MODE") == "1":
     import pydevd
@@ -22,10 +22,7 @@ if os.getenv("DEBUG_MODE") == "1":
     )
 
 
-ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000"
-]
+ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 
 def create_app() -> FastAPI:
@@ -51,6 +48,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["*"],
     )
+
     fastapi.include_router(get_api_router())
     setup_dishka(container, fastapi)
 

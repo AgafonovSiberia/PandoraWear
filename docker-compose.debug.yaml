@@ -51,8 +51,18 @@ services:
       - "8080:8080"
 
   postgres:
+    ports:
+      - "6666:5432"
     env_file:
       - debug.env
+
+  redis:
+    ports:
+      - "6667:6379"
+
+  redis_insight:
+    ports:
+      - "5540:5540"
 
   migrations:
     env_file:
