@@ -11,8 +11,8 @@ from apps.common.dao.device import DeviceDomain, DeviceIn, DevicePairDataOut, De
 from apps.common.dao.user import ConfirmDeviceIn
 from apps.gateway.auth.crypto import check_hashed_value, hash_value
 
-TOKEN_LEN = 64
-REFRESH_TOKEN_LEN = 64
+TOKEN_LEN = 32
+REFRESH_TOKEN_LEN = 32
 TOKEN_TTL = timedelta(days=60)
 TOKEN_CACHE_TTL_SECONDS = 60 * 60 * 2
 PAIR_CODE_TTL_SECONDS = 60

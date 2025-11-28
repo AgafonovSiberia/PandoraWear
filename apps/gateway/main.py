@@ -1,7 +1,7 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
-from apps.gateway.services.pandora_client.session_manager import PandoraClientManager
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,16 +26,19 @@ ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 
 def create_app() -> FastAPI:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
     container = create_container()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        pandora_manager = await container.get(PandoraClientManager)
-        await pandora_manager.start()
         try:
             yield
         finally:
-            await pandora_manager.stop()
             await container.close()
 
     fastapi = FastAPI(title="Pandora Gateway API", version="1.0.0", lifespan=lifespan)

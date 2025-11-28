@@ -52,10 +52,12 @@ class PandoraSession:
             "password": self._cred.password,
             "lang": "ru",
         }
-
+        logger.error(f"[_do_login_request] - payload:{payload}")
         try:
             async with ClientSession(base_url=URL.base_url) as session:
-                response = await session.post(URL.login, json=payload, timeout=self.LOGIN_TIMEOUT)
+                response = await session.post(
+                    URL.login, json=payload, timeout=self.LOGIN_TIMEOUT, headers=self.HEADERS_TEMPLATE
+                )
                 status = response.status
                 try:
                     data = await response.json()
@@ -92,6 +94,7 @@ class PandoraSession:
 
     async def _ensure_session_id(self, *, force: bool = False) -> str:
         if self._session_id and not force:
+            logger.info("[ensure_session_id] - session_id received from instance")
             return self._session_id
 
         if not force and (session_id := await self._get_session_id_from_cache()):
@@ -113,6 +116,7 @@ class PandoraSession:
     ) -> tuple[int, Any]:
         async with ClientSession(base_url=URL.base_url) as session:
             response = await session.request(method, path, headers=headers, cookies=cookies, **kwargs)
+            logger.info(f"[_do_request_once] - success request {method}:{path}")
             status = response.status
             try:
                 data = await response.json()
@@ -123,8 +127,7 @@ class PandoraSession:
     @staticmethod
     async def inject_session_id(cookies: dict, headers: dict, session_id: str) -> None:
         if session_id:
-            headers.setdefault(AuthResponseField.SESSION_ID, session_id)
-            cookies.setdefault(AuthResponseField.SESSION_ID, session_id)
+            cookies.setdefault("sid", session_id)
 
     async def _get_cookies_and_headers(self) -> tuple[dict[str, str], dict[str, str]]:
         return self.COOKIES_TEMPLATE.copy(), self.HEADERS_TEMPLATE.copy()
@@ -132,7 +135,7 @@ class PandoraSession:
     async def request_json(self, method: str, path: str, **kwargs: Any) -> Any:
         session_id = await self._ensure_session_id(force=False)
 
-        cookies, headers = self._get_cookies_and_headers()
+        cookies, headers = await self._get_cookies_and_headers()
         if session_id:
             await self.inject_session_id(cookies=cookies, headers=headers, session_id=session_id)
 
@@ -155,7 +158,7 @@ class PandoraSession:
             logger.error("[request_json_with_relogin] - relogin failed")
             raise excepton.LoginException("RELOGIN FAILED")
 
-        cookies, headers = self._get_cookies_and_headers()
+        cookies, headers = await self._get_cookies_and_headers()
         if session_id:
             await self.inject_session_id(cookies=cookies, headers=headers, session_id=session_id)
 

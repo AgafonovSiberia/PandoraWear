@@ -4,7 +4,7 @@ services:
       debug.env
     environment:
       DEBUG_MODE: 1
-    build:
+    build: !override
       context: .
       dockerfile: apps/gateway/Dockerfile.debug
     volumes:
@@ -52,7 +52,7 @@ services:
 
   postgres:
     ports:
-      - "6666:5432"
+      - "6432:5432"
     env_file:
       - debug.env
 

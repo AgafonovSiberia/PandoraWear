@@ -10,22 +10,19 @@ class PandoraClient:
         self._session = session
 
     async def get_all_devices(self) -> dict:
-        response = await self._session.request_json(method="GET", path=URL.devices)
-        return await response.json()
+        return await self._session.request_json(method="GET", path=URL.devices)
 
     async def get_updates(self) -> dict:
-        response = await self._session.request_json(method="GET", path=URL.update, params={"ts": -1})
-        return await response.json()
+        return await self._session.request_json(method="GET", path=URL.update, params={"ts": -1})
 
     async def run_command(
         self,
         pandora_command: PandoraCommand,
         device_id: int,
     ) -> dict:
-        response = await self._session.request_json(
+        return await self._session.request_json(
             method="POST", path=URL.command, data={"id": device_id, "command": pandora_command.value}
         )
-        return await response.json()
 
 
 async def resolve_pandora_client(user_id: int, pandora_cred: PandoraCredDomain, cache: ICache) -> PandoraClient:
