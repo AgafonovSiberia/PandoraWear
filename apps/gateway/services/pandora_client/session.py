@@ -116,12 +116,12 @@ class PandoraSession:
     ) -> tuple[int, Any]:
         async with ClientSession(base_url=URL.base_url) as session:
             response = await session.request(method, path, headers=headers, cookies=cookies, **kwargs)
-            logger.info(f"[_do_request_once] - success request {method}:{path}")
             status = response.status
             try:
                 data = await response.json()
             except Exception:
                 data = await response.text()
+        logger.info(f"[_do_request_once] - {method} : {path} : {data}")
         return status, data
 
     @staticmethod
