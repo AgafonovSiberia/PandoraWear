@@ -121,7 +121,7 @@ class PandoraSession:
                 data = await response.json()
             except Exception:
                 data = await response.text()
-        logger.info(f"[_do_request_once] - {method} : {path} : {data}")
+        logger.info(f"[_do_request_once] - {method} : {path}")
         return status, data
 
     @staticmethod
@@ -147,7 +147,7 @@ class PandoraSession:
             **kwargs,
         )
 
-        if response_status not in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN):
+        if response_status not in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN, HTTPStatus.PROXY_AUTHENTICATION_REQUIRED):
             return response_data
 
         return await self.request_json_with_relogin(method=method, path=path, **kwargs)

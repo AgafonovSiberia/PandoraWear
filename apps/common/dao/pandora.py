@@ -69,15 +69,15 @@ class PandoraDevice(BaseModel):
 
 
 class PandoraDeviceData(BaseModel):
-    fuel: int
-    voltage: float
-    engine_temp: int
-    out_temp: int
-    cabin_temp: int
-    engine_rpm: int
+    fuel: int = 0
+    voltage: float  = 0
+    engine_temp: int  = 0
+    out_temp: int  = 0
+    cabin_temp: int  = 0
+    engine_rpm: int  = 0
 
-    x: float
-    y: float
+    x: float  = 0
+    y: float = 0
 
 
 class PandoraDeviceDomain(BaseModel):
@@ -88,7 +88,8 @@ class PandoraDeviceDomain(BaseModel):
 
 
 class PandoraActionResponse(BaseModel):
-    action_result: dict
+    status: str = "success"
+    action_result: dict = {}
 
 
 class _AlarmAction(BaseModel):

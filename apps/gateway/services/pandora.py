@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import HTTPException, status
 
 from apps.common.const import AlarmAction
@@ -5,6 +7,8 @@ from apps.common.core.protocols.repository import IUserRepo
 from apps.common.dao.pandora import PandoraActionResponse, PandoraDevice, PandoraDeviceData, PandoraDeviceDomain
 from apps.gateway.services.pandora_client.client import PandoraClient
 from apps.gateway.services.pandora_client.const import PandoraCommand
+
+logger = logging.getLogger(__name__)
 
 
 def resolve_pandora_action(action: AlarmAction) -> PandoraCommand | None:
@@ -26,18 +30,14 @@ class PandoraService:
         domain_devices = []
         for device in [PandoraDevice.model_validate(device) for device in devices]:
             data = updates.get("stats", {}).get(str(device.id), None)
-            if not data:
-                continue
             device_domain = PandoraDeviceDomain(
                 id=device.id,
                 name=device.name,
                 model=device.model,
-                data=PandoraDeviceData.model_validate(data)
+                data=PandoraDeviceData.model_validate(data) if data else PandoraDeviceData(),
             )
             domain_devices.append(device_domain)
         return domain_devices
-
-
 
     async def execute_command(self, alarm_device_id: int, action: AlarmAction) -> PandoraActionResponse:
         pandora_command = resolve_pandora_action(action)
@@ -46,5 +46,8 @@ class PandoraService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="UNKNOWN_COMMAND",
             )
-        request = await self._pandora.run_command(device_id=alarm_device_id, pandora_command=pandora_command)
-        return PandoraActionResponse.model_validate(request)
+        response = await self._pandora.run_command(device_id=alarm_device_id, pandora_command=pandora_command)
+        logger.error(response)
+        if response.get("status") in ("fail",):
+            return PandoraActionResponse(status="fail")
+        return PandoraActionResponse.model_validate(response)
