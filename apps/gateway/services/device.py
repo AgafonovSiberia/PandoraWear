@@ -126,7 +126,7 @@ class DeviceService:
 
         # Пока что просто продлеваем токен сами
         new_expires_at = datetime.now(UTC) + TOKEN_TTL
-        await self.cache.set(self.device_key(device.id), str(device.token_hash), ttl=TOKEN_CACHE_TTL_SECONDS)
+        await self.cache.set(self.device_key(device.id), str(device.token_hash))
         device_update = DeviceUpdate(
             id=device.id,
             last_rotated_at=datetime.now(UTC),
