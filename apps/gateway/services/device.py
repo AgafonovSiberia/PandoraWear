@@ -89,7 +89,7 @@ class DeviceService:
         )
         device = await self.device_repo.upsert_device(device_in)
         await self.cache.set(
-            key=self.device_key(device.id), value=token_hashed.decode(encoding="utf-8"), ttl=TOKEN_CACHE_TTL_SECONDS
+            key=self.device_key(device.id), value=token_hashed.decode(encoding="utf-8")
         )
         return DevicePairDataOut(device_id=str(device.id), token=raw_token)
 
